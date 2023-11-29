@@ -26,3 +26,7 @@ Signed 64-bit integer
 ## fp64
 
 Fixed-point 64.64
+
+## IBalance
+
+Balance holding i64 value
