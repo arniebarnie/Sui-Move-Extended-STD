@@ -2,7 +2,7 @@
 
 Extended standard library for the Sui Move language
 * Utility methods for:
-  * u64 [link]("/stl/sources/u64.move", "u64.move")
+  * u64 [link](/stl/sources/u64.move, "u64.move")
   * u128
   * u256
 * Arithmetic modules:
