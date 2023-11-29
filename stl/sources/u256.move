@@ -2,6 +2,10 @@
 
 module 0x0::u256 {
 //========================================================= METHODS ===========================================================//
+    // max(1, x)
+    public fun norm(x: u256): u256 { 
+        if (x == 0) 1 else x
+    }
     // Minimum of x and y
     public fun min(x: u256, y: u256): u256 { 
         if (x < y) x else y 

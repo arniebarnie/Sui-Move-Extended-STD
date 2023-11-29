@@ -2,6 +2,10 @@
 
 module 0x0::u64 {
 //========================================================= METHODS ===========================================================//
+    // max(1, x)
+    public fun norm(x: u64): u64 { 
+        if (x == 0) 1 else x
+    }
     // Minimum of x and y
     public fun min(x: u64, y: u64): u64 { 
         if (x < y) x else y 

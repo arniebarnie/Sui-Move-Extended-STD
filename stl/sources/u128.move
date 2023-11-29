@@ -2,6 +2,10 @@
 
 module 0x0::u128 {
 //========================================================= METHODS ===========================================================//
+    // max(1, x)
+    public fun norm(x: u128): u128 { 
+        if (x == 0) 1 else x
+    }
     // Minimum of x and y
     public fun min(x: u128, y: u128): u128 { 
         if (x < y) x else y 

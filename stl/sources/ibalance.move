@@ -22,7 +22,7 @@ module 0x0::ibalance {
             IBalance { value: i64::zero() }
     }
     // Get value of balance
-    public fun get<T>(balance: & IBalance<T>): I64 {
+    public fun value<T>(balance: & IBalance<T>): I64 {
             balance.value
     }
     // Join value of balance to another balance
@@ -70,15 +70,15 @@ module 0x0::ibalance {
 		let IBalance { value: _ } = balance;
 	}
 	#[test]
-	fun get_test() {
+	fun value_test() {
 		let balance = zero<X>();
-		assert!(get(& balance) == i64::zero(), 1);
+		assert!(value(& balance) == i64::zero(), 1);
 		let IBalance { value: _ } = balance;
 		let balance = IBalance<X> { value: i64::i64(5) };
-		assert!(get(& balance) == i64::i64(5), 1);
+		assert!(value(& balance) == i64::i64(5), 1);
 		let IBalance { value: _ } = balance;
 		let balance = IBalance<X> { value: i64::neg(i64::i64(5)) };
-		assert!(get(& balance) == i64::neg(i64::i64(5)), 1);
+		assert!(value(& balance) == i64::neg(i64::i64(5)), 1);
 		let IBalance { value: _ } = balance;
 	}
 	#[test]

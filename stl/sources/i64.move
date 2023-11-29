@@ -59,6 +59,11 @@ module 0x0::i64 {
         // If x is 0 don't flip sign bit
         I64 { bits: (if (x.bits != 0) (x.bits ^ NEG_VAL) else 0) } 
     }
+    // -|x|
+    public fun force(x: I64): I64 {
+        // If x is 0 don't flip sign bit
+        I64 { bits: (if (x.bits != 0) (x.bits | NEG_VAL) else 0) }
+    }
     // |x|
     public fun abs(x: I64): I64 {
         // Set sign bit off
@@ -300,6 +305,12 @@ module 0x0::i64 {
         assert!(neg(I64 { bits: 0 }) == I64 { bits: 0 }, 1);
         assert!(neg(I64 { bits: 5 }) == I64 { bits: NEG_VAL + 5 }, 2);
         assert!(neg(I64 { bits: NEG_VAL + 10 }) == I64 { bits: 10 }, 3);
+    }
+    #[test]
+    fun force_test() {
+        assert!(force(I64 { bits: 0 }) == I64 { bits: 0 }, 1);
+        assert!(force(I64 { bits: 5 }) == I64 { bits: NEG_VAL + 5 }, 2);
+        assert!(force(I64 { bits: NEG_VAL + 10 }) == I64 { bits: NEG_VAL + 10 }, 3);
     }
     #[test]
     fun abs_test() {
