@@ -1,7 +1,6 @@
 # Sui Move Extended Standard Library
 
 Extended standard library for the Sui Move language\
-Built by Arnav Rastogi
 
 # Modules
 
