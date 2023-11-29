@@ -1,7 +1,6 @@
 # Sui Move Extended Standard Library
 
-Extended standard library for the Sui Move language\
-Built by Arnav Rastogi
+Extended standard library for the Sui Move language
 
 # Modules
 
@@ -26,3 +25,7 @@ Signed 64-bit integer
 ## fp64
 
 Fixed-point 64.64
+
+## IBalance
+
+Balance holding i64 value
