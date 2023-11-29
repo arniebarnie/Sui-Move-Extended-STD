@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-#[allow(unused_function)]
 module 0x0::fp64 {
-//======================================================= IMPORTS ============================================================//
+//======================================================== IMPORTS ============================================================//
     use 0x0::u256::sqrt as sqrt_;
     use 0x1::fixed_point32::{get_raw_value, create_from_rational, FixedPoint32 as FP32};
 //======================================================= ERROR CODES =========================================================//
     const EInvalidDivisor: u64 = 2;
-    const ERatioOutOfRange: u64 = 3;
 //======================================================== CONSTANTS ==========================================================//
     const Q64: u8 = 64; // Number of integer or fractional bits in an FP64
     const Q32_TO_64: u8 = 32; // Number of bits to shift a FP32 to get a FP64
@@ -19,63 +17,62 @@ module 0x0::fp64 {
     }
 //========================================================= METHODS ===========================================================//
     // New FP64 with value 0
-    fun zero(): FP64 {
+    public fun zero(): FP64 {
         FP64 { bits: 0 }
     }
     // New FP64 from raw bits from a u128
-    fun fp64(bits: u128): FP64 {
+    public fun fp64(bits: u128): FP64 {
         FP64 { bits }
     }
     // New FP64 from a u64 interpreted as an integer
-    fun int(x: u64): FP64 {
+    public fun int(x: u64): FP64 {
         FP64 { bits: (x as u128) << Q64 }
     }
     // New FP64 from x / y
     // x and y are u64 interpreted as integers
     // Aborts if x / y is too small to hold in a FP64
-    fun frac(x: u64, y: u64): FP64 {
+    public fun frac(x: u64, y: u64): FP64 {
         assert!(y != 0, EInvalidDivisor);
         let res = ((x as u128) << Q64) / (y as u128);
-        assert!(res > 0 || x == 0, ERatioOutOfRange);
         FP64 { bits: res }
     }
     // New FP64 from FP32
-    fun fp32(x: FP32): FP64 {
+    public fun fp32(x: FP32): FP64 {
         FP64 { bits: (get_raw_value(x) as u128) << Q32_TO_64 }
     }
     // Get bits of FP64
-    fun bits(x: FP64): u128 {
+    public fun bits(x: FP64): u128 {
         x.bits
     }
     // Get center 64 bits of FP64
-    fun center(x: FP64): u64 {
+    public fun center(x: FP64): u64 {
         (((x.bits >> 32) & LAST_MASK) as u64)
     }
     // x + y
-    fun add(x: FP64, y: FP64): FP64 {
+    public fun add(x: FP64, y: FP64): FP64 {
         FP64 { bits: x.bits + y.bits }
     }
     // x - y
-    fun sub(x: FP64, y: FP64): FP64 {
+    public fun sub(x: FP64, y: FP64): FP64 {
         FP64 { bits: x.bits - y.bits }
     }
     // x * y where x and y are FP64
-    fun mul(x: FP64, y: FP64): FP64 {
+    public fun mul(x: FP64, y: FP64): FP64 {
         FP64 { bits: ((((x.bits as u256) * (y.bits as u256)) >> Q64) as u128) }
     }
     // x / y where x and y are FP64
-    fun div(x: FP64, y: FP64): FP64 {
+    public fun div(x: FP64, y: FP64): FP64 {
         FP64 { bits: ((((x.bits as u256) << Q64) / (y.bits as u256)) as u128) }
     }
     // x * y where x is an integer
-    fun prod(x: u64, y: FP64): u64 {
+    public fun prod(x: u64, y: FP64): u64 {
         (((x as u256) * (y.bits as u256)) >> Q64 as u64)
     }
     // x / y where x is an integer
-    fun quot(x: u64, y: FP64): u64 {
+    public fun quot(x: u64, y: FP64): u64 {
         ((((x as u128) << Q64) / y.bits) as u64)
     }
-    fun sqrt(x: FP64): FP64 {
+    public fun sqrt(x: FP64): FP64 {
         FP64 { bits: (sqrt_((x.bits as u256) << Q64) as u128) }
     }
 //========================================================== TESTS ============================================================//

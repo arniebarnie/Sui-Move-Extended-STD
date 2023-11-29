@@ -32,15 +32,46 @@ module 0x0::u128 {
         };
         res
     }
-    // sqrt(x) - Babylonian method 
+    // sqrt(x)
     public fun sqrt(x: u128): u128 {
-        let z = (x + 1) / 2;
-        let res = x;
-        while (z < res) {
-            res = z;
-            z = (x / z + z) / 2;
+        if (x == 0) {
+            return 0
         };
-        res
+        let a = x;
+
+        let result = 1u128;
+        if (x >> 64 > 0) {
+            x = x >> 64;
+            result = result << 32;
+        };
+        if (x >> 32 > 0) {
+            x = x >> 32;
+            result = result << 16;
+        };
+        if (x >> 16 > 0) {
+            x = x >> 16;
+            result = result << 8;
+        };
+        if (x >> 8 > 0) {
+            x = x >> 8;
+            result = result << 4;
+        };
+        if (x >> 4 > 0) {
+            x = x >> 4;
+            result = result << 2;
+        };
+        if (x >> 2 > 0) {
+            result = result << 1;
+        };
+
+        result = (result + a / result) >> 1;
+        result = (result + a / result) >> 1;
+        result = (result + a / result) >> 1;
+        result = (result + a / result) >> 1;
+        result = (result + a / result) >> 1;
+        result = (result + a / result) >> 1;
+        result = (result + a / result) >> 1;
+        min(result, a / result)
     }
 //========================================================== TESTS ============================================================//
     // x^y
