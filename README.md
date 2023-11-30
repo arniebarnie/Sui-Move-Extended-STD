@@ -164,4 +164,4 @@ Permissionless address capability system
 ## Module [`0x0::ibalance`](/stl/sources/ibalance.move "IBalance")
 Balance holding signed 64-bit integer value
 ## Module [`0x0::position`](/stl/sources/position.move "Position") 
-Collateralized position system# Sui Move Extended Standard Library
+Collateralized position system
