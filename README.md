@@ -10,3 +10,4 @@ Extended standard library for the Sui Move language
   * [Signed 64-bit integer](/stl/sources/i64.move "i64")
 * [Balance](/stl/sources/ibalance.move "IBalance") holding signed 64-bit integer value
 * Permissionless [account](/stl/sources/account.move "Account") system
+* Collateralized [position](/stl/sources/position.move "Position") system
