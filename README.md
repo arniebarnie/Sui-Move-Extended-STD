@@ -2,9 +2,9 @@
 # Sui Move Extended Standard Library
 
 Extended standard library for the Sui Move language
-* [`u64`](#module-0x0u64)
-* [`u128`](#module-0x0u128)
-* [`u256`](#module-0x0u256)
+* [`0x0::u64`](#module-0x0u64)
+* [`0x0::u128`](#module-0x0u128)
+* [`0x0::u256`](#module-0x0u256)
 * [`0x0::i64`](#module-0x0i64)
 * [`0x0::fp64`](#module-0x0fp64)
 * [`0x0::account`](#module-0x0account)
