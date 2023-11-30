@@ -73,6 +73,10 @@ module 0x0::u64 {
         result = (result + a / result) >> 1;
         min(result, a / result)
     }
+    // (x * y) / z
+    public fun scaled(x: u64, y: u64, z: u64): u64 {
+        (((x as u128) * (y as u128) / (z as u128)) as u64)
+    }
 //========================================================== TESTS ============================================================//
     // x^y
     #[test]
