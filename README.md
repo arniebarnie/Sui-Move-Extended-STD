@@ -6,8 +6,8 @@ Extended standard library for the Sui Move language
   * [u128](/stl/sources/u128.move "u128")
   * [u256](/stl/sources/u256.move "u256")
 * Arithmetic modules:
-  * [fp64](/stl/sources/fp64.move "fp64"): 64.64-bit fixed-point integer
-  * [i64](/stl/sources/i64.move "i64"): Signed 64-bit integer
-* [balance](/stl/sources/ibalance.move "IBalance"): Holds signed 64-bit integer value
-* [account](/stl/sources/account.move "Account") Permissionless address capability system
-* [position](/stl/sources/position.move "Position"): Collateralized position system
+  * [fp64:](/stl/sources/fp64.move "fp64") 64.64-bit fixed-point integer
+  * [i64:](/stl/sources/i64.move "i64") Signed 64-bit integer
+* [balance:](/stl/sources/ibalance.move "IBalance") Holds signed 64-bit integer value
+* [account:](/stl/sources/account.move "Account") Permissionless address capability system
+* [position:](/stl/sources/position.move "Position") Collateralized position system
