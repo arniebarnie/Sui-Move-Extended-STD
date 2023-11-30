@@ -36,7 +36,7 @@ module 0x0::u64 {
         };
         res
     }
-    // sqrt(x)
+    // sqrt(x) - EIP 7054
     public fun sqrt(x: u64): u64 {
         if (x == 0) {
             return 0

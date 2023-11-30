@@ -36,7 +36,7 @@ module 0x0::u128 {
         };
         res
     }
-    // sqrt(x)
+    // sqrt(x) - EIP 7054
     public fun sqrt(x: u128): u128 {
         if (x == 0) {
             return 0

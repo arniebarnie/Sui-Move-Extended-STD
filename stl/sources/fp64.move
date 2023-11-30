@@ -10,6 +10,7 @@ module 0x0::fp64 {
     const Q64: u8 = 64; // Number of integer or fractional bits in an FP64
     const Q32_TO_64: u8 = 32; // Number of bits to shift a FP32 to get a FP64
     const LAST_MASK: u128 = 0xFFFFFFFFFFFFFFFF; // Mask to get the last 64 bits of an integer
+    const HALF: u128 = 1 << 63;
 //========================================================= OBJECTS ===========================================================//
     // FP64 is a 64.64 fixed point number stored in a u128
     struct FP64 has copy, drop, store { 
@@ -72,8 +73,21 @@ module 0x0::fp64 {
     public fun quot(x: u64, y: FP64): u64 {
         ((((x as u128) << Q64) / y.bits) as u64)
     }
+    // sqrt(x)
     public fun sqrt(x: FP64): FP64 {
         FP64 { bits: (sqrt_((x.bits as u256) << Q64) as u128) }
+    }
+    // floor(x)
+    public fun floor(x: FP64): u64 {
+        (x.bits >> Q64 as u64)
+    }
+    // ceil(x)
+    public fun ceil(x: FP64): u64 {
+        (x.bits >> Q64 as u64) + (if (x.bits & LAST_MASK == 0) 0 else 1)
+    }
+    // round x to nearest integer
+    public fun round(x: FP64): u64 {
+        (x.bits >> Q64 as u64) + (if (x.bits & HALF == 0) 0 else 1)
     }
 //========================================================== TESTS ============================================================//
     #[test_only]
@@ -184,5 +198,27 @@ module 0x0::fp64 {
         assert!(bits(sqrt(int(1))) == 1 << Q64, 58);
         assert!(sqrt(int(9)) == int(3), 59);
         assert!(sqrt(frac(1, 16)) == frac(1, 4), 60);
+    }
+    #[test]
+    fun test_floor() {
+        assert!(floor(int(1)) == 1, 65);
+        assert!(floor(frac(1, 2)) == 0, 66);
+        assert!(floor(frac(25, 4)) == 6, 67);
+        assert!(floor(frac(40, 8)) == 5, 68);
+    }
+    #[test]
+    fun test_ceil() {
+        assert!(ceil(int(1)) == 1, 61);
+        assert!(ceil(frac(1, 2)) == 1, 62);
+        assert!(ceil(frac(25, 4)) == 7, 63);
+        assert!(ceil(frac(40, 8)) == 5, 64);
+    }
+    #[test]
+    fun test_round() {
+        assert!(round(int(1)) == 1, 69);
+        assert!(round(frac(1, 2)) == 1, 70);
+        assert!(round(frac(25, 4)) == 6, 71);
+        assert!(round(frac(40, 8)) == 5, 72);
+        assert!(round(frac(45, 8)) == 6, 73);
     }
 }

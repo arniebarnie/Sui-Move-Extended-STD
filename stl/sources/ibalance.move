@@ -5,8 +5,7 @@ module 0x0::ibalance {
     use 0x0::i64::{Self, I64};
 	use 0x2::balance::Supply;
 //======================================================= ERROR CODES =========================================================//
-    const ENotEnough: u64 = 4;
-    const ENotEmpty: u64 = 5;
+    const ENotEmpty: u64 = 3;
 //========================================================= OBJECTS ===========================================================//
     // Balance capable of holding a positive or negative value
     struct IBalance<phantom T> has store { 
@@ -36,18 +35,8 @@ module 0x0::ibalance {
         self.value = i64::add(self.value, value);
         self
     }
-    // Pull positive balances (previously held, newly created) from balance
-    public fun pull<T>(self: &mut IBalance<T>, value: u64): (IBalance<T>, IBalance<T>) {
-        let value = i64::i64(value);
-        let value_1 = i64::min(value, self.value);
-        let value_2 = i64::sub(value, value_1);
-        self.value = i64::sub(self.value, value);
-        (IBalance { value: value_1 }, IBalance { value: value_2 })
-    }
-    // Split balance from balance (Only pulls from positive value of balance)
-    public fun split<T>(self: &mut IBalance<T>, value: u64): IBalance<T> {
-        let value = i64::i64(value);
-        assert!(i64::gte(self.value, value), ENotEnough);
+    // Split balance from balance
+    public fun split<T>(self: &mut IBalance<T>, value: I64): IBalance<T> {
         self.value = i64::sub(self.value, value);
         IBalance { value }
     }
@@ -101,35 +90,11 @@ module 0x0::ibalance {
 		let IBalance { value: _ } = balance;
 	}
 	#[test]
-	fun pull_test() {
-		let balance = IBalance<X> { value: i64::i64(5) };
-		let (balance_1, balance_2) = pull(&mut balance, 3);
-		assert!(balance_1.value == i64::i64(3), 1);
-		assert!(balance_2.value == i64::zero(), 1);
-		let IBalance { value: _ } = balance_1;
-		let IBalance { value: _ } = balance_2;
-		let (balance_1, balance_2) = pull(&mut balance, 3);
-		assert!(balance_1.value == i64::i64(2), 1);
-		assert!(balance_2.value == i64::i64(1), 1);
-		assert!(balance.value == i64::neg(i64::i64(1)), 1);
-		let IBalance { value: _ } = balance_1;
-		let IBalance { value: _ } = balance_2;
-		let IBalance { value: _ } = balance;
-	}
-	#[test]
 	fun split_test() {
 		let balance = IBalance<X> { value: i64::i64(5) };
-		let balance_1 = split(&mut balance, 3);
+		let balance_1 = split(&mut balance, i64::i64(3));
 		assert!(balance_1.value == i64::i64(3), 1);
 		assert!(balance.value == i64::i64(2), 1);
-		let IBalance { value: _ } = balance_1;
-		let IBalance { value: _ } = balance;
-	}
-	#[test]
-	#[expected_failure]
-	fun split_test_fail() {
-		let balance = IBalance<X> { value: i64::i64(5) };
-		let balance_1 = split(&mut balance, 6);
 		let IBalance { value: _ } = balance_1;
 		let IBalance { value: _ } = balance;
 	}

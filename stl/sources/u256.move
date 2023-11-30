@@ -36,7 +36,7 @@ module 0x0::u256 {
         };
         res
     }
-    // sqrt(x) - Babylonian method 
+    // sqrt(x) - EIP 7054
     public fun sqrt(x: u256): u256 {
         if (x == 0) {
             return 0
