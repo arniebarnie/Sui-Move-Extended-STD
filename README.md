@@ -154,9 +154,9 @@ Permissionless address capability system
 	account_id: <b>address</b>
 }</code></pre>
 <pre>Create new account and capability
-<code><b>public</b> <b>fun</b> new(ctx: &<b>mut</b> TxContext): u64</code></pre>
+<code><b>public</b> <b>fun</b> new(ctx: &<b>mut</b> TxContext): Account</code></pre>
 <pre>Duplicate account capability
-<code><b>public</b> <b>fun</b> duplicate(account: & Account, ctx: &<b>mut</b> TxContext): u64</code></pre>
+<code><b>public</b> <b>fun</b> duplicate(account: & Account, ctx: &<b>mut</b> TxContext): Account</code></pre>
 <pre>Get account ID
 <code><b>public</b> <b>fun</b> id(account: & Account): <b>address</b></code></pre>
 <pre>Destroy account capability
