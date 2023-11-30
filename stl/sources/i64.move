@@ -26,13 +26,13 @@ module 0x0::i64 {
         I64 { bits: x }
     }
     // Convert x to u64
-    // Aborts if x is negative
+    // Aborts if x < 0
     public fun u63(x: I64): u64 {
         // Make sure that x is positive
         assert!(x.bits < NEG_VAL, EOverflow);
         x.bits
     }
-    // Split x to sign and value
+    // Split x into sign and absolute value
     public fun split(x: I64): (bool, u64) {
         (x.bits < NEG_VAL, x.bits & SET_ABS)
     }

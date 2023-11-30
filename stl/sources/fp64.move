@@ -31,7 +31,6 @@ module 0x0::fp64 {
     }
     // New FP64 from x / y
     // x and y are u64 interpreted as integers
-    // Aborts if x / y is too small to hold in a FP64
     public fun frac(x: u64, y: u64): FP64 {
         assert!(y != 0, EInvalidDivisor);
         let res = ((x as u128) << Q64) / (y as u128);
@@ -65,6 +64,10 @@ module 0x0::fp64 {
     public fun div(x: FP64, y: FP64): FP64 {
         FP64 { bits: ((((x.bits as u256) << Q64) / (y.bits as u256)) as u128) }
     }
+    // |x - y|
+    public fun diff(x: FP64, y: FP64): FP64 {
+        if (x.bits > y.bits) FP64 { bits: x.bits - y.bits } else FP64 { bits: y.bits - x.bits }
+    }
     // x * y where x is an integer
     public fun prod(x: u64, y: FP64): u64 {
         (((x as u256) * (y.bits as u256)) >> Q64 as u64)
@@ -88,6 +91,34 @@ module 0x0::fp64 {
     // round x to nearest integer
     public fun round(x: FP64): u64 {
         (x.bits >> Q64 as u64) + (if (x.bits & HALF == 0) 0 else 1)
+    }
+    // x == y
+    public fun eq(x: FP64, y: FP64): bool {
+        x.bits == y.bits
+    }
+    // x < y
+    public fun lt(x: FP64, y: FP64): bool {
+        x.bits < y.bits
+    }
+    // x <= y
+    public fun lte(x: FP64, y: FP64): bool {
+        x.bits <= y.bits
+    }
+    // x > y
+    public fun gt(x: FP64, y: FP64): bool {
+        x.bits > y.bits
+    }
+    // x >= y
+    public fun gte(x: FP64, y: FP64): bool {
+        x.bits >= y.bits
+    }
+    // min(x, y)
+    public fun min(x: FP64, y: FP64): FP64 {
+        if (x.bits < y.bits) x else  y
+    }
+    // max(x, y)
+    public fun max(x: FP64, y: FP64): FP64 {
+        if (x.bits > y.bits) x else  y
     }
 //========================================================== TESTS ============================================================//
     #[test_only]
