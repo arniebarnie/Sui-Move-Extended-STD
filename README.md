@@ -25,6 +25,8 @@ Utility methods for `u64`
 <code><b>public</b> <b>fun</b> pow(x: u64, y: u8): u64</code></pre>
 <pre>Calculate √x
 <code><b>public</b> <b>fun</b> sqrt(x: u64): u64</code></pre>
+<pre>Calculate (x*y)/z
+<code><b>public</b> <b>fun</b> scaled(x: u64, y: u64, z: u64): u64</code></pre>
 ## Module [`0x0::u128`](/stl/sources/u128.move "u128")
 Utility methods for `u128`
 <pre>Calculate max(x,1)
@@ -39,6 +41,8 @@ Utility methods for `u128`
 <code><b>public</b> <b>fun</b> pow(x: u128, y: u8): u128</code></pre>
 <pre>Calculate √x
 <code><b>public</b> <b>fun</b> sqrt(x: u128): u128</code></pre>
+<pre>Calculate (x*y)/z
+<code><b>public</b> <b>fun</b> scaled(x: u128, y: u128, z: u128): u128</code></pre>
 ## Module [`0x0::u256`](/stl/sources/u256.move "u256")
 Utility methods for `u256`
 <pre>Calculate max(x,1)
@@ -164,4 +168,4 @@ Permissionless address capability system
 ## Module [`0x0::ibalance`](/stl/sources/ibalance.move "IBalance")
 Balance holding signed 64-bit integer value
 ## Module [`0x0::position`](/stl/sources/position.move "Position") 
-Collateralized position system# Sui Move Extended Standard Library
+Collateralized position system
