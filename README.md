@@ -238,4 +238,3 @@ Utility methods for `u256`
 <code><b>public</b> <b>fun</b> pow(x: u256, y: u8): u256 // Calculate x^y</code></pre>
 <pre>
 <code><b>public</b> <b>fun</b> sqrt(x: u256): u256 // Calculate √x</code></pre>
-<pre>
