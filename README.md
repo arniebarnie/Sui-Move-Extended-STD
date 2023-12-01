@@ -1,5 +1,3 @@
-
-
 # Sui Move Extended Standard Library
 
 Extended standard library for the Sui Move language
@@ -54,10 +52,30 @@ Balance holding signed 64-bit integer value
 <pre><code><b>public</b> <b>fun</b> burn&ltT&gt(_: &<b>mut</b> Supply&ltT&gt, balance: IBalance&ltT&gt) // Burn balance</code></pre>
 ## Module [`0x0::position`](/stl/sources/position.move "Position") 
 Non custodial collateralized position system
+<pre><code><b>struct</b> Position&lt<b>phantom</b> T&gt <b>has</b> drop { } 
+<b>struct</b> Note&lt<b>phantom</b> T&gt <b>has</b> drop { } 
+<b>struct</b> Pool&lt<b>phantom</b> T, <b>phantom</b> Q&gt <b>has</b> key {
+	id: <b>UID</b>,
+	rate: FP64,
+	winning: FP64,
+	collateral: Balance&ltQ&gt,
+	closure: u64,
+	position_supply: Supply&ltPosition&ltT&gt&gt,
+	note_supply: Supply&ltNote&ltT&gt&gt
+}
+<b>struct</b> PoolData <b>has</b> <b>copy</b>, store, drop {
+	pool_id: address,
+	metadata: vector&ltu8&gt
+}
+<b>struct</b> PoolRegistry <b>has</b> key {
+	id: <b>UID</b>,
+	registered: Table&ltTypeName, PoolData&gt
+}
+</code></pre>
 <pre><code><b>public</b> <b>fun</b> get&ltT&gt(registry: & PoolRegistry): (address, vector&ltu8&gt) // Get (address, metadata) for pool of given type</code></pre>
 <pre><code>// Create new position pool
 // Must own type of positions
-<b>public</b> <b>fun</b> new&ltT:drop,Q&gt(registry: & PoolRegistry, _: T, rate: FP64, closure: u64, metadata: vector&ltu8&gt): (address, vector&ltu8&gt)
+<b>public</b> <b>fun</b> new&ltT:drop,Q&gt(registry: & PoolRegistry, _: T, rate: FP64, closure: u64, metadata: vector&ltu8&gt, ctx: &<b>mut</b> TxContext)
 </code></pre>
 <pre><code><b>public</b> <b>fun</b> id&ltT,Q&gt(pool: & Pool&ltT,Q&gt): address // Get pool ID</code></pre>
 <pre><code><b>public</b> <b>fun</b> rate&ltT,Q&gt(pool: & Pool&ltT,Q&gt): FP64 // Get pool collateralization rate</code></pre>
