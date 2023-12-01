@@ -1,3 +1,5 @@
+
+
 # Sui Move Extended Standard Library
 
 Extended standard library for the Sui Move language
@@ -32,26 +34,50 @@ Generic box to place objects without keys in global storage
 	item: T
 }</code></pre>
 <pre>
-<code><b>public</b> <b>fun</b> box&ltT&gt(item: T, ctx: <b>&mut</b> TxContext): Box&ltT&gt // Box item</code></pre>
+<code><b>public</b> <b>fun</b> box&ltT&gt(item: T, ctx: &<b>mut</b> TxContext): Box&ltT&gt // Box item</code></pre>
 <pre>
 <code><b>public</b> <b>fun</b> unbox&ltT&gt(item: T): T // Unbox item</code></pre>
 <pre>
 <code><b>public</b> <b>fun</b> borrow&ltT&gt(box: Box&ltT&gt): & T // Borrow item</code></pre>
 <pre>
-<code><b>public</b> <b>fun</b> borrow_mut&ltT&gt(box: Box&ltT&gt): <b>&mut</b> T // Mutably borrow item</code></pre>
+<code><b>public</b> <b>fun</b> borrow_mut&ltT&gt(box: Box&ltT&gt): &<b>mut</b> T // Mutably borrow item</code></pre>
 ## Module [`0x0::ibalance`](/stl/sources/ibalance.move "IBalance")
 Balance holding signed 64-bit integer value
 <pre><code><b>struct</b> IBalance&lt<b>phantom</b> T&gt <b>has</b> store { value: I64 }</code></pre>
-<pre><code><b>public</b> <b>fun</b> mint&ltT&gt(_: <b>&mut</b> Supply&ltT&gt, value: I64): IBalance&ltT&gt // Create a balance with a value</code></pre>
+<pre><code><b>public</b> <b>fun</b> mint&ltT&gt(_: &<b>mut</b> Supply&ltT&gt, value: I64): IBalance&ltT&gt // Create a balance with a value</code></pre>
 <pre><code><b>public</b> <b>fun</b> zero&ltT&gt(): IBalance&ltT&gt // Create a balance of value 0</code></pre>
-<pre><code><b>public</b> <b>fun</b> value&ltT&gt(self: <b>&mut</b> IBalance&ltT&gt): u64 // Get value of balance</code></pre>
-<pre><code><b>public</b> <b>fun</b> join&ltT&gt(self: <b>&mut</b> IBalance&ltT&gt, balance: IBalance&ltT&gt) // Join value of balance to another balance</code></pre>
+<pre><code><b>public</b> <b>fun</b> value&ltT&gt(self: &<b>mut</b> IBalance&ltT&gt): u64 // Get value of balance</code></pre>
+<pre><code><b>public</b> <b>fun</b> join&ltT&gt(self: &<b>mut</b> IBalance&ltT&gt, balance: IBalance&ltT&gt) // Join value of balance to another balance</code></pre>
 <pre><code><b>public</b> <b>fun</b> merge&ltT&gt(self: IBalance&ltT&gt, balance: IBalance&ltT&gt): IBalance&ltT&gt // Merge two balances</code></pre>
 <pre><code><b>public</b> <b>fun</b> split&ltT&gt(self: IBalance&ltT&gt, value: I64): IBalance&ltT&gt // Split balance from balance</code></pre>
 <pre><code><b>public</b> <b>fun</b> destroy&ltT&gt(balance: IBalance&ltT&gt): IBalance&ltT&gt // Destroy balance - aborts if value is not 0</code></pre>
-<pre><code><b>public</b> <b>fun</b> burn&ltT&gt(_: <b>&mut</b> Supply&ltT&gt, balance: IBalance&ltT&gt) // Burn balance</code></pre>
+<pre><code><b>public</b> <b>fun</b> burn&ltT&gt(_: &<b>mut</b> Supply&ltT&gt, balance: IBalance&ltT&gt) // Burn balance</code></pre>
 ## Module [`0x0::position`](/stl/sources/position.move "Position") 
 Non custodial collateralized position system
+<pre><code><b>public</b> <b>fun</b> get&ltT&gt(registry: & PoolRegistry): (address, vector&ltu8&gt) // Get (address, metadata) for pool of given type</code></pre>
+<pre><code>// Create new position pool
+// Must own type of positions
+<b>public</b> <b>fun</b> new&ltT:drop,Q&gt(registry: & PoolRegistry, _: T, rate: FP64, closure: u64, metadata: vector&ltu8&gt): (address, vector&ltu8&gt)
+</code></pre>
+<pre><code><b>public</b> <b>fun</b> id&ltT,Q&gt(pool: & Pool&ltT,Q&gt): address // Get pool ID</code></pre>
+<pre><code><b>public</b> <b>fun</b> rate&ltT,Q&gt(pool: & Pool&ltT,Q&gt): FP64 // Get pool collateralization rate</code></pre>
+<pre><code><b>public</b> <b>fun</b> collateral&ltT,Q&gt(pool: & Pool&ltT,Q&gt): FP64 // Get pool collateral total</code></pre>
+<pre><code><b>public</b> <b>fun</b> settled&ltT,Q&gt(pool: & Pool&ltT,Q&gt, clock: & Clock): bool // Check if pool is settled</code></pre>
+<pre><code><b>public</b> <b>fun</b> winning&ltT,Q&gt(pool: & Pool&ltT,Q&gt): FP64 // Get pool winning rate</code></pre>
+<pre><code><b>public</b> <b>fun</b> needed&ltT,Q&gt(pool: & Pool&ltT,Q&gt, quantity: u64): u64 // Calculate collateral needed for position creation</code></pre>
+<pre><code>// Underwrite position with collateral
+<b>public</b> <b>fun</b> underwrite&ltT,Q&gt(pool: &<b>mut</b> Pool&ltT,Q&gt, quantity: u64, collateral: &<b>mut</b> Balance&ltQ&gt, clock: & Clock): (Balance&ltPosition&ltT&gt&gt, Balance&ltNote&ltT&gt&gt)</code></pre>
+<pre><code>// Close position with note to release collateral
+<b>public</b> <b>fun</b> close&ltT,Q&gt(pool: &<b>mut</b> Pool&ltT,Q&gt, quantity: u64, position: Balance&ltPosition&ltT&gt&gt, note: Balance&ltNote&ltT&gt&gt, collateral: &<b>mut</b> Balance&ltQ&gt, clock: & Clock)</code></pre>
+<pre><code><b>public</b> <b>fun</b> locked&ltT,Q&gt(pool: & Pool&ltT,Q&gt, note: & Balance&ltNote&ltT&gt&gt): u64 // Collateral locked under note</code></pre>
+<pre><code>// Update position pool winnings rate
+<b>public</b> <b>fun</b> update&ltT:drop,Q&gt(pool: &<b>mut</b> Pool&ltT,Q&gt, winning: FP64, clock: & Clock)</code></pre>
+<pre><code>// Claim winnings for position from settled pool
+<b>public</b> <b>fun</b> claim&ltT,Q&gt(pool: &<b>mut</b> Pool&ltT,Q&gt, position: Balance&ltPosition&ltT&gt&gt, clock: & Clock): Balance&ltQ&gt</code></pre>
+<pre><code>// Unlock remaining collateral for note from settled pool
+<b>public</b> <b>fun</b> unlock&ltT,Q&gt(pool: &<b>mut</b> Pool&ltT,Q&gt, note: Balance&ltNote&ltT&gt&gt, clock: & Clock): Balance&ltQ&gt </code></pre>
+<pre><code>// Empty collateral pool after all positions and notes settled
+<b>public</b> <b>fun</b> drain&ltT,Q&gt(pool: &<b>mut</b> Pool&ltT,Q&gt, _: T, clock: & Clock): Balance&ltQ&gt </code></pre>
 ## Module [`0x0::fp64`](/stl/sources/fp64.move "fp64")
 64.64-bit fixed-point integer
 <pre><code><b>struct</b> FP64 <b>has</b> <b>copy</b>, drop { bits: u128 }</code></pre>
