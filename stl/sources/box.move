@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-module 0x0::box {
+module sui::box {
 //======================================================== IMPORTS ============================================================//
-    use 0x2::object::{Self, UID};
+    use sui::object::{Self, UID};
     use 0x2::tx_context::TxContext;
 //========================================================= OBJECTS ===========================================================//
     // Generic struct to hold items with store
@@ -26,5 +26,13 @@ module 0x0::box {
         } = box;
         object::delete(id);
         item
+    }
+    // Borrow item from box
+    public fun borrow<T:store>(box: & Box<T>): & T {
+        & box.item
+    }
+    // Mutably borrow item from box
+    public fun borrow_mut<T:store>(box: &mut Box<T>): &mut T {
+        &mut box.item
     }
 }
