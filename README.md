@@ -12,7 +12,7 @@ Extended standard library for the Sui Move language
 * [`0x0::u256`](#module-0x0u256)
 
 ## Module [`0x0::account`](/stl/sources/account.move "Account")
-Permissionless address capability system
+Permissionless account capability system
 <pre><code><b>struct</b> Account <b>has</b> key, store  {
 	id: <b>UID</b>,
 	account_id: <b>address</b>
