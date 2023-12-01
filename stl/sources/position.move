@@ -24,7 +24,7 @@ module 0x0::position {
     // Type for note for collateral locked in position pool
     struct Note<phantom T> has drop { }
     // Pool for collateral locked for positions
-    struct Pool<phantom T, phantom Q> has key, store {
+    struct Pool<phantom T, phantom Q> has key {
         id: UID,
         rate: FP64,
         winning: FP64,
@@ -53,7 +53,7 @@ module 0x0::position {
             }
         );
     }
-    // Get (address, metadata) for position pool of given type
+    // Get (address, metadata) for pool of given type
     public fun get<T>(registry: & PoolRegistry): (address, vector<u8>) {
         let t_name = type_name::get<T>();
         assert!(table::contains(& registry.registered, t_name), ETypeNotRegistered);
@@ -82,21 +82,25 @@ module 0x0::position {
             }
         );
     }
-    // Get position pool ID
+    // Get pool ID
     public fun id<T,Q>(pool: & Pool<T,Q>): address {
         object::uid_to_address(& pool.id)
     }
-    // Get position pool collateralization or eventually settlement rate
+    // Get pool collateralization rate
     public fun rate<T,Q>(pool: & Pool<T,Q>): FP64 {
         pool.rate
     }
-    // Get position pool collateral total
+    // Get pool collateral total
     public fun collateral<T,Q>(pool: & Pool<T,Q>): u64 {
         balance::value(& pool.collateral)
     }
-    // Check if position pool is settled
+    // Check if pool is settled
     public fun settled<T,Q>(pool: & Pool<T,Q>, clock: & Clock): bool {
         clock::timestamp_ms(clock) >= pool.closure
+    }
+    // Get winning position winning rate
+    public fun winning<T,Q>(pool: & Pool<T,Q>): FP64 {
+        pool.winning
     }
     // Calculate collateral needed for position creation
     public fun needed<T,Q>(pool: & Pool<T,Q>, quantity: u64): u64 {
