@@ -10,7 +10,8 @@ module 0x0::position {
     use 0x2::table::{Self, Table};
     use 0x2::clock::{Self, Clock};
     use 0x2::transfer::{Self};
-    use sui::tx_context::TxContext;
+    use sui::tx_context::{Self, TxContext};
+    use 0x2::event::{Self};
 //======================================================= ERROR CODES =========================================================//
     const ETypeRegistered: u64 = 4;
     const ETypeNotRegistered: u64 = 5;
@@ -18,6 +19,17 @@ module 0x0::position {
     const EPoolNotSettled: u64 = 7;
     const EBalanceValueMismatch: u64 = 8;
     const ENotEmpty: u64 = 9;
+//========================================================== EVENTS ===========================================================//
+    struct RegisterCreated has copy, drop {
+        registry: address
+    }
+    struct PoolCreated<phantom T> has copy, drop {
+        pool: address,
+        creator: address,
+        collateral: TypeName,
+        rate: FP64,
+        metadata: vector<u8>
+    }
 //========================================================= OBJECTS ===========================================================//
     // Type for position on type T
     struct Position<phantom T> has drop { }
@@ -46,9 +58,13 @@ module 0x0::position {
     // Module initializer
     // Create pool registry singleton
     fun init(ctx: &mut TxContext) {
+        let id = object::new(ctx);
+        event::emit(RegisterCreated {
+            registry: object::uid_to_address(& id)
+        });
         transfer::share_object(
             PoolRegistry {
-                id: object::new(ctx),
+                id,
                 registered: table::new(ctx),
             }
         );
@@ -62,12 +78,20 @@ module 0x0::position {
     }
     // Create new position pool
     // Must own type of positions
-    public fun new<T:drop,Q>(registry: &mut PoolRegistry, _: T, rate: FP64, closure: u64, metadata: vector<u8>, ctx: &mut TxContext) {
+    public fun new<T:drop,Q>(registry: &mut PoolRegistry, _: T, rate: FP64, closure: u64, metadata: vector<u8>, ctx: &mut TxContext): address {
         let t_name = type_name::get<T>();
         assert!(!table::contains(& registry.registered, t_name), ETypeRegistered);
         let id = object::new(ctx);
+        let pool_id = object::uid_to_address(& id);
         table::add(&mut registry.registered, t_name, PoolData {
-            pool_id: object::uid_to_address(& id),
+            pool_id,
+            metadata
+        });
+        event::emit(PoolCreated<T> {
+            pool: pool_id,
+            creator: tx_context::sender(ctx),
+            collateral: type_name::get<Q>(),
+            rate,
             metadata
         });
         transfer::share_object(
@@ -81,6 +105,7 @@ module 0x0::position {
                 note_supply: balance::create_supply(Note { })
             }
         );
+        pool_id
     }
     // Get pool ID
     public fun id<T,Q>(pool: & Pool<T,Q>): address {
@@ -160,6 +185,7 @@ module 0x0::position {
     struct Y has drop { }
     #[test_only]
     use 0x2::test_scenario;
+    #[test_only]
     use 0x2::test_utils;
     #[test]
     fun position_test() {
