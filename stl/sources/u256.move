@@ -1,24 +1,25 @@
 // SPDX-License-Identifier: MIT
 
+/// Mathematical functions for `u256`s
 module 0x0::u256 {
 //========================================================= METHODS ===========================================================//
-    // max(1, x)
+    /// `max(1, x)`
     public fun norm(x: u256): u256 { 
         if (x == 0) 1 else x
     }
-    // Minimum of x and y
+    /// `min(x, y)`
     public fun min(x: u256, y: u256): u256 { 
         if (x < y) x else y 
     }
-    // Maximum of x and y
+    /// `max(x, y)`
     public fun max(x: u256, y: u256): u256 { 
         if (x > y) x else y 
     }
-    // |x - y|
+    /// `|x - y|`
     public fun diff(x: u256, y: u256): u256 {
         if (x > y) (x - y) else (y - x)
     }
-    // x^y
+    /// `x^y`
     public fun pow(x: u256, y: u8): u256 {
         if (y == 0) return 1;
 
@@ -36,7 +37,7 @@ module 0x0::u256 {
         };
         res
     }
-    // sqrt(x) - EIP 7054
+    /// `sqrt(x)` => EIP 7054
     public fun sqrt(x: u256): u256 {
         if (x == 0) {
             return 0

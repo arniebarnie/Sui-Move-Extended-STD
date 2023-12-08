@@ -1,24 +1,25 @@
 // SPDX-License-Identifier: MIT
 
+/// Mathematical functions for `u128`s
 module 0x0::u128 {
 //========================================================= METHODS ===========================================================//
-    // max(1, x)
+    /// `max(1, x)`
     public fun norm(x: u128): u128 { 
         if (x == 0) 1 else x
     }
-    // Minimum of x and y
+    /// `min(x, y)`
     public fun min(x: u128, y: u128): u128 { 
         if (x < y) x else y 
     }
-    // Maximum of x and y
+    /// `max(x, y)`
     public fun max(x: u128, y: u128): u128 { 
         if (x > y) x else y 
     }
-    // |x - y|
+    /// `|x - y|`
     public fun diff(x: u128, y: u128): u128 {
         if (x > y) (x - y) else (y - x)
     }
-    // x^y
+    /// `x^y`
     public fun pow(x: u128, y: u8): u128 {
         if (y == 0) return 1;
 
@@ -36,7 +37,7 @@ module 0x0::u128 {
         };
         res
     }
-    // sqrt(x) - EIP 7054
+    /// `sqrt(x)` => EIP 7054
     public fun sqrt(x: u128): u128 {
         if (x == 0) {
             return 0
@@ -77,7 +78,7 @@ module 0x0::u128 {
         result = (result + a / result) >> 1;
         min(result, a / result)
     }
-    // (x * y) / z
+    /// (`x` * `y`) / `z`
     public fun scaled(x: u128, y: u128, z: u128): u128 {
         (((x as u256) * (y as u256) / (z as u256)) as u128)
     }

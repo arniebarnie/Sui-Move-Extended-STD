@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+/// A `FP64` is a 64.64 bit fixed point number stored in a u128.
 module 0x0::fp64 {
 //======================================================== IMPORTS ============================================================//
     use 0x0::u256::sqrt as sqrt_;
@@ -12,111 +13,111 @@ module 0x0::fp64 {
     const LAST_MASK: u128 = 0xFFFFFFFFFFFFFFFF; // Mask to get the last 64 bits of an integer
     const HALF: u128 = 1 << 63;
 //========================================================= OBJECTS ===========================================================//
-    // FP64 is a 64.64 fixed point number stored in a u128
+    /// `FP64` is a 64.64 fixed point number stored in a u128
     struct FP64 has copy, drop, store { 
         bits: u128
     }
 //========================================================= METHODS ===========================================================//
-    // New FP64 with value 0
+    /// Returns a new `FP64` of value 0.
     public fun zero(): FP64 {
         FP64 { bits: 0 }
     }
-    // New FP64 from raw bits from a u128
+    /// Returns a `FP64` from raw bits from a u128.
     public fun fp64(bits: u128): FP64 {
         FP64 { bits }
     }
-    // New FP64 from a u64 interpreted as an integer
+    /// Returns a new `FP64` from a u64 interpreted as an integer.
     public fun int(x: u64): FP64 {
         FP64 { bits: (x as u128) << Q64 }
     }
-    // New FP64 from x / y
-    // x and y are u64 interpreted as integers
+    /// Returns a new `FP64` from `x / y`.
+    /// `x` and `y` are `u64` interpreted as integers.
     public fun frac(x: u64, y: u64): FP64 {
         assert!(y != 0, EInvalidDivisor);
         let res = ((x as u128) << Q64) / (y as u128);
         FP64 { bits: res }
     }
-    // New FP64 from FP32
+    /// Returns a new `FP64` from a `0x1::FixedPoint32`
     public fun fp32(x: FP32): FP64 {
         FP64 { bits: (get_raw_value(x) as u128) << Q32_TO_64 }
     }
-    // Get bits of FP64
+    /// Returns bits of `x`
     public fun bits(x: FP64): u128 {
         x.bits
     }
-    // Get center 64 bits of FP64
+    /// Returns center 64 bits of `x`
     public fun center(x: FP64): u64 {
         (((x.bits >> 32) & LAST_MASK) as u64)
     }
-    // x + y
+    /// Returns `x + y`
     public fun add(x: FP64, y: FP64): FP64 {
         FP64 { bits: x.bits + y.bits }
     }
-    // x - y
+    /// Returns `x - y`
     public fun sub(x: FP64, y: FP64): FP64 {
         FP64 { bits: x.bits - y.bits }
     }
-    // x * y where x and y are FP64
+    /// Returns `x * y` where `x` and `y` are `FP64`s
     public fun mul(x: FP64, y: FP64): FP64 {
         FP64 { bits: ((((x.bits as u256) * (y.bits as u256)) >> Q64) as u128) }
     }
-    // x / y where x and y are FP64
+    /// Returns `x / y` where `x` and `y` are `FP64`s
     public fun div(x: FP64, y: FP64): FP64 {
         FP64 { bits: ((((x.bits as u256) << Q64) / (y.bits as u256)) as u128) }
     }
-    // |x - y|
+    /// Returns `|x - y|`
     public fun diff(x: FP64, y: FP64): FP64 {
         if (x.bits > y.bits) FP64 { bits: x.bits - y.bits } else FP64 { bits: y.bits - x.bits }
     }
-    // x * y where x is an integer
+    /// Returns `x * y` where `x` is a `u64` interpreted as an integer
     public fun prod(x: u64, y: FP64): u64 {
         (((x as u256) * (y.bits as u256)) >> Q64 as u64)
     }
-    // x / y where x is an integer
+    /// Returns `x / y` where `x` is a `u64` interpreted as an integer
     public fun quot(x: u64, y: FP64): u64 {
         ((((x as u128) << Q64) / y.bits) as u64)
     }
-    // sqrt(x)
+    /// Returns `sqrt(x)`
     public fun sqrt(x: FP64): FP64 {
         FP64 { bits: (sqrt_((x.bits as u256) << Q64) as u128) }
     }
-    // floor(x)
+    /// Returns `floor(x)`
     public fun floor(x: FP64): u64 {
         (x.bits >> Q64 as u64)
     }
-    // ceil(x)
+    /// Returns `ceil(x)`
     public fun ceil(x: FP64): u64 {
         (x.bits >> Q64 as u64) + (if (x.bits & LAST_MASK == 0) 0 else 1)
     }
-    // round x to nearest integer
+    /// Rounds `x` to nearest integer
     public fun round(x: FP64): u64 {
         (x.bits >> Q64 as u64) + (if (x.bits & HALF == 0) 0 else 1)
     }
-    // x == y
+    /// Returns true if `x == y` and false otherwise
     public fun eq(x: FP64, y: FP64): bool {
         x.bits == y.bits
     }
-    // x < y
+    /// Returns true if `x < y` and false otherwise
     public fun lt(x: FP64, y: FP64): bool {
         x.bits < y.bits
     }
-    // x <= y
+    /// Returns true if `x <= y` and false otherwise
     public fun lte(x: FP64, y: FP64): bool {
         x.bits <= y.bits
     }
-    // x > y
+    /// Returns true if `x > y` and false otherwise
     public fun gt(x: FP64, y: FP64): bool {
         x.bits > y.bits
     }
-    // x >= y
+    /// Returns true if `x >= y` and false otherwise
     public fun gte(x: FP64, y: FP64): bool {
         x.bits >= y.bits
     }
-    // min(x, y)
+    /// Returns `min(x, y)`
     public fun min(x: FP64, y: FP64): FP64 {
         if (x.bits < y.bits) x else  y
     }
-    // max(x, y)
+    /// Returns `max(x, y)`
     public fun max(x: FP64, y: FP64): FP64 {
         if (x.bits > y.bits) x else  y
     }

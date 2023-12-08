@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
 
+/// Permissionless system to create and manage capability for an address.
 module 0x0::account {
 //======================================================== IMPORTS ============================================================//
     use sui::object::{Self, UID};
     use 0x2::tx_context::TxContext;
 //========================================================= OBJECTS ===========================================================//
-    // Account capability for address
+    /// Account capability for address
     struct Account has key, store {
         id: UID, // UID of the account
         account_id: address // Address of the account
     }
 //========================================================= METHODS ===========================================================//
-    // Create new account capability
+    /// Returns new capability for an account ID.
     public fun new(ctx: &mut TxContext): Account {
         let id = object::new(ctx);
         let account_id = object::uid_to_address(& id);
@@ -20,18 +21,18 @@ module 0x0::account {
             account_id
         }
     }
-    // Duplicate account capability
+    /// Returns duplicate of capability for account ID.
     public fun duplicate(account: & Account, ctx: &mut TxContext): Account {
         Account {
             id: object::new(ctx),
             account_id: account.account_id
         }
     }
-    // Get account ID
+    /// Returns account ID of capability.
     public fun id(account: & Account): address {
         account.account_id
     }
-    // Destroy account capability
+    /// Destroy capability for account ID.
     public fun destroy(account: Account): address {
         let Account {
             id,

@@ -1,13 +1,16 @@
+// SPDX-License-Identifier: MIT
+
 /// A `BigVector` is a vector-like collection that stores multiple vectors using Sui's dynamic fields. This allows a `BigVector`'s capacity 
 /// to be theoretically unlimited. However, the quantity of operations on `BigVector's in a single transaction is bounded by its dynamic field 
 /// accesses as these are capped per transaction. Note that this also means that `BigVector` values with the exact same index-value mapping 
 /// will not be equal, with `==`, at runtime.
 module 0x0::big_vector {
+//======================================================== IMPORTS ============================================================//
     use 0x1::vector::{Self};
     use sui::object::{Self, UID};
-    use 0x2::dynamic_field::{Self};
+    use sui::dynamic_field::{Self};
     use sui::tx_context::{TxContext};
-
+//======================================================= ERROR CODES =========================================================//
     /// Element index out of bounds
     const EInvalidElementIndex: u64 = 1;
     /// Bucket index out of bounds
@@ -18,19 +21,19 @@ module 0x0::big_vector {
     const EBigVectorNotEmpty: u64 = 4;
     /// Vector is too large to append
     const EInvalidVectorSize: u64 = 5;
-
+//======================================================== CONSTANTS ==========================================================//
     /// Maximum bytes able to be held in a single vector
     const VECTOR_MAX_BYTES: u64 = 256_000;
     /// Buffer in each bucket to store elements temporarily during methods
     const BUCKET_SIZE_BUFFER: u64 = 1;
-
+//========================================================= OBJECTS ===========================================================//
     struct BigVector<phantom E> has key, store {
         id: UID,
         bucket_size: u64,
         bucket_count: u64,
         length: u64,
     }
-    
+//========================================================= METHODS ===========================================================//
     /// Returns empty `BigVector`.
     public fun empty<E:store>(element_size_in_bytes: u16, ctx: &mut TxContext): BigVector<E> {
         let id = object::new(ctx);
@@ -225,6 +228,7 @@ module 0x0::big_vector {
         assert!(length == 0, EBigVectorNotEmpty);
         object::delete(id);
     }
+    #[allow(unused_type_parameter)]
     /// Drops a possibly non-empty `bv`. Usable only if the `E` has the `drop` ability.
     public fun drop<E:store,drop>(bv: BigVector<E>) {
         let BigVector {

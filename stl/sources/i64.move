@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#[allow(unused_function)]
+/// An `I64` is a signed 64-bit integer.
 module 0x0::i64 {
 //======================================================= ERROR CODES =========================================================//
     const EOverflow: u64 = 1;
@@ -10,70 +10,70 @@ module 0x0::i64 {
     const NEG_VAL: u64 = (1 << 63); // i64 with value of 0 but sign bit flipped on
     const SET_ABS: u64 = 0x8000000000000000 ^ 0xFFFFFFFFFFFFFFFF; // Mask to set sign bit off
 //========================================================= OBJECTS ===========================================================//
-    // First bit stores sign, and remaining (63 bits) store value
+    /// First bit stores sign, and remaining (63 bits) store value
     struct I64 has copy, drop, store { 
         bits: u64 
     }
 //========================================================= METHODS ===========================================================//
-    // Get I64 of value 0
+    /// Returns `I64` of value 0.
     public fun zero(): I64 { 
         I64 { bits: 0 } 
     }
-    // Convert x to I64
+    /// Returns `I64` of value `x`.
     public fun i64(x: u64): I64 {
         // Make sure that first bit is free to hold sign
         assert!(x < MAX_I64, EOverflow);
         I64 { bits: x }
     }
-    // Convert x to u64
-    // Aborts if x < 0
+    /// Returns `x` as a `u64`.
+    /// Aborts if `x < 0`.
     public fun u63(x: I64): u64 {
         // Make sure that x is positive
         assert!(x.bits < NEG_VAL, EOverflow);
         x.bits
     }
-    // Split x into sign and absolute value
+    // Splits `x` into sign and absolute value.
     public fun split(x: I64): (bool, u64) {
         (x.bits < NEG_VAL, x.bits & SET_ABS)
     }
-    // Get raw bits of x
+    // Returns raw bits of `x`.
     public fun bits(x: I64): u64 { 
         x.bits 
     }
-    // Max(0,x) as u64
+    // Returns `max(0, x)` as a `u64`.
     public fun plus(x: I64): u64 {
         // If x is negative return 0 else value of x
         if (x.bits > NEG_VAL) 0 else x.bits
     }
-    // max(0, -x) as u64
+    // Returns `max(0, -x)` as a `u64`.
     public fun minus(x: I64): u64 {
         // If x is positive return 0 else value of x
         if (x.bits < NEG_VAL) 0 else (x.bits & SET_ABS)
     }
-    // Sign(x) - if x >= 0, true else false
+    // Returns true if `x >= 0` and false otherwise.
     public fun sign(x: I64): bool { 
         x.bits < NEG_VAL 
     }
-    // -x
+    // Returns `-x`
     public fun neg(x: I64): I64 {
         // If x is 0 don't flip sign bit
         I64 { bits: (if (x.bits != 0) (x.bits ^ NEG_VAL) else 0) } 
     }
-    // -|x|
+    // Returns `-|x|`
     public fun force(x: I64): I64 {
         // If x is 0 don't flip sign bit
         I64 { bits: (if (x.bits != 0) (x.bits | NEG_VAL) else 0) }
     }
-    // |x|
+    // Returns `|x|`
     public fun abs(x: I64): I64 {
         // Set sign bit off
         I64 { bits: (x.bits & SET_ABS) } 
     }
-    // x == y
+    // Returns `x == y`
     public fun eq(x: I64, y: I64): bool { 
         x.bits == y.bits 
     }
-    // x < y
+    // Returns `x < y`
     public fun lt(x: I64, y: I64): bool {
         // Sign of x
         let x_neg = x.bits > NEG_VAL;
@@ -85,7 +85,7 @@ module 0x0::i64 {
         else if (x_neg) (x.bits > y.bits)
         else (x.bits < y.bits)
     }
-    // x <= y
+    // Returns `x <= y`
     public fun lte(x: I64, y: I64): bool {
         // Sign of x
         let x_neg = x.bits > NEG_VAL;
@@ -97,7 +97,7 @@ module 0x0::i64 {
         else if (x_neg) (x.bits >= y.bits)
         else (x.bits <= y.bits)
     }
-    // x > y
+    // Returns `x > y`
     public fun gt(x: I64, y: I64): bool {
         // Sign of x
         let x_pos = x.bits < NEG_VAL;
@@ -109,7 +109,7 @@ module 0x0::i64 {
         else if (x_pos) (x.bits > y.bits)
         else (x.bits < y.bits)
     }
-    // x >= y
+    // Returns `x >= y`
     public fun gte(x: I64, y: I64): bool {
         // Sign of x
         let x_pos = x.bits < NEG_VAL;
@@ -121,7 +121,7 @@ module 0x0::i64 {
         else if (x_pos) (x.bits >= y.bits)
         else (x.bits <= y.bits)
     }
-    // Maximum of x and y
+    // Returns `max(x, y)`
     public fun max(x: I64, y: I64): I64 {
         // Sign of x
         let x_neg = x.bits > NEG_VAL;
@@ -132,7 +132,7 @@ module 0x0::i64 {
         else if (x_neg) (if (x.bits < y.bits) x else y)
         else (if (x.bits > y.bits) x else y)
     }
-    // Minimum of x and y
+    // Returns `min(x, y)`
     public fun min(x: I64, y: I64): I64 {
         // Sign of x
         let x_neg = x.bits > NEG_VAL;
@@ -143,7 +143,7 @@ module 0x0::i64 {
         else if (x_neg) (if (x.bits > y.bits) x else y)
         else (if (x.bits < y.bits) x else y)
     }
-    // x + y
+    // Returns `x + y`
     public fun add(x: I64, y: I64): I64 {
         let x = x.bits;
         let y = y.bits;
@@ -161,7 +161,7 @@ module 0x0::i64 {
             else I64 { bits: x + (y & SET_ABS) }
         }
     }
-    // x - y
+    // Returns `x - y`
     public fun sub(x: I64, y: I64): I64 {
         let x = x.bits;
         let y = y.bits;
@@ -180,7 +180,7 @@ module 0x0::i64 {
             else I64 { bits: if (y >= x) (y - x) else NEG_VAL + (x - y) }
         }
     }
-    // x * y
+    // Returns `x * y`
     public fun mul(x: I64, y: I64): I64 {
         let x = x.bits;
         let y = y.bits;
@@ -194,7 +194,7 @@ module 0x0::i64 {
             I64 { bits: res + (if ((x >> U63) == (y >> U63)) 0 else NEG_VAL) }
         }
     }
-    // x / y
+    // Returns `x / y`
     public fun div(x: I64, y: I64): I64 {
         let x = x.bits;
         let y = y.bits;
@@ -202,7 +202,7 @@ module 0x0::i64 {
         // Negate x / y if sign(x) != sign(y)
         else I64 { bits: ((x & SET_ABS) / (y & SET_ABS)) + (if ((x >> U63) == (y >> U63)) 0 else NEG_VAL) }
     }
-    // |x - y|
+    // Returns `|x - y|`
     public fun diff(x: I64, y: I64): I64 {
         let x = x.bits;
         let y = y.bits;
@@ -222,7 +222,7 @@ module 0x0::i64 {
             else I64 { bits: if (x > y) ((x - y) & SET_ABS) else ((y - x) & SET_ABS) }
         }
     }
-    // x^y
+    // Returns `x^y`
     public fun pow(x: I64, y: u8): I64 {
         let sgn = (x.bits >> U63) * ((y % 2) as u64) * NEG_VAL;
         let x_val = x.bits & SET_ABS;

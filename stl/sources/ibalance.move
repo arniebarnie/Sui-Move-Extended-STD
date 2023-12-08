@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+/// An `IBalance` is a balance capable of holding a positive or negative value.
 module 0x0::ibalance {
 //======================================================== IMPORTS ============================================================//
     use 0x0::i64::{Self, I64};
@@ -7,45 +8,46 @@ module 0x0::ibalance {
 //======================================================= ERROR CODES =========================================================//
     const ENotEmpty: u64 = 3;
 //========================================================= OBJECTS ===========================================================//
-    // Balance capable of holding a positive or negative value
+    /// Holds a positive or negative value
     struct IBalance<phantom T> has store { 
             value: I64 
     }
 //========================================================= METHODS ===========================================================//
-    // Create a balance with a value
+    /// Returns an `Ibalance` with a value of `value` using a mutable reference to an `0x2::balance::Supply<T>`
 	public fun mint<T>(_: &mut Supply<T>, value: I64): IBalance<T> {
 			IBalance { value }
 	}
-	// Create a zero balance
+	/// Returns an `Ibalance` with a value of 0
     public fun zero<T>(): IBalance<T> {
             IBalance { value: i64::zero() }
     }
-    // Get value of balance
+    /// Retuns value of `balance`
     public fun value<T>(balance: & IBalance<T>): I64 {
             balance.value
     }
-    // Join value of balance to another balance
+    /// Joins value of `balance` to another `Ibalance`
     public fun join<T>(self: &mut IBalance<T>, balance: IBalance<T>) {
         let IBalance { value } = balance;
         self.value = i64::add(self.value, value);
     }
-    // Merge two balances
+    /// Merges `self` with `balance` into a single `Ibalance`
     public fun merge<T>(self: IBalance<T>, balance: IBalance<T>): IBalance<T> {
         let IBalance { value } = balance;
         self.value = i64::add(self.value, value);
         self
     }
-    // Split balance from balance
+    /// Splits an `Ibalance` from `balance` with a value of `value`
     public fun split<T>(self: &mut IBalance<T>, value: I64): IBalance<T> {
         self.value = i64::sub(self.value, value);
         IBalance { value }
     }
-    // Destroy balance
+    /// Destroys `balance`.
+    /// Aborts if `balance` is not empty.
     public fun destroy<T>(balance: IBalance<T>) {
         let IBalance { value } = balance;
 		assert!(value == i64::zero(), ENotEmpty);
     }
-	// Burn balance
+	/// Burns `balance` using a mutable reference to an `0x2::balance::Supply<T>`
 	public fun burn<T>(_: &mut Supply<T>, balance: IBalance<T>) {
 		let IBalance { value: _ } = balance;
 	}
