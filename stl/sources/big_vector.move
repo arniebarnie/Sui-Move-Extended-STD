@@ -77,7 +77,7 @@ module 0x0::big_vector {
         vector::borrow(dynamic_field::borrow(& bv.id, i / bv.bucket_size), i % bv.bucket_size)
     }
     /// Returns mutable reference to the `i`th element of `bv`. Uses 1 dynamic field access.
-    public fun borrow_mut<E:store>(bv: &mut BigVector<E>, i: u64): & E {
+    public fun borrow_mut<E:store>(bv: &mut BigVector<E>, i: u64): &mut E {
         // i / bucket_size finds the bucket index
         // i % bucket_size finds the element index inside the bucket
         vector::borrow_mut(dynamic_field::borrow_mut(&mut bv.id, i / bv.bucket_size), i % bv.bucket_size)
@@ -109,6 +109,7 @@ module 0x0::big_vector {
             let removed_bucket = dynamic_field::remove(&mut bv.id, bv_bucket_count);
             let popped_element = vector::pop_back(&mut removed_bucket);
             vector::destroy_empty(removed_bucket);
+            bv.bucket_count = bv_bucket_count;
             popped_element
         } else vector::pop_back(dynamic_field::borrow_mut(&mut bv.id, bv.bucket_count - 1))
     }
@@ -138,7 +139,7 @@ module 0x0::big_vector {
             // Add popped element to end of bucket i_bucket
             vector::push_back(bucket, popped_element);
             // Swap element at index i_slot with last element from bucket i_bucket
-            let bucket_length = vector::length(bucket);
+            let bucket_length = vector::length(bucket) - 1;
             vector::swap(bucket, i_slot, bucket_length);
         } else vector::swap<E>(dynamic_field::borrow_mut(&mut bv.id, i_bucket), i % bv_bucket_size, j % bv_bucket_size);
     }
@@ -147,8 +148,6 @@ module 0x0::big_vector {
         let v_length = vector::length(& v);
         let bv_bucket_size = bv.bucket_size;
         assert!(v_length <= bv_bucket_size, EInvalidVectorSize);
-        // Reverse v to pop elements in reverse order
-        vector::reverse(&mut v);
         let bv_length = bv.length;
         let bv_bucket_count = bv.bucket_count;
         // Check if the last bucket of bv is already full
@@ -156,7 +155,9 @@ module 0x0::big_vector {
             dynamic_field::add(&mut bv.id, bv_bucket_count, v);
             bv.bucket_count = bv_bucket_count + 1;
         // Check if appending to v to bv will require another bucket
-        } else if ((bv_length + v_length) / bv_bucket_size  == bv_bucket_count) {
+        } else if ((bv_length + v_length) / bv_bucket_size  == bv_bucket_count && (bv_length % bv_bucket_size) + v_length != bv_bucket_size) {
+            // Reverse v to pop elements in reverse order
+            vector::reverse(&mut v);
             let bv_id = &mut bv.id;
             let bucket = dynamic_field::borrow_mut(bv_id, bv_bucket_count - 1);
             let added_to_bucket = bv_bucket_size - vector::length(bucket);
@@ -230,7 +231,7 @@ module 0x0::big_vector {
     }
     #[allow(unused_type_parameter)]
     /// Drops a possibly non-empty `bv`. Usable only if the `E` has the `drop` ability.
-    public fun drop<E:store,drop>(bv: BigVector<E>) {
+    public fun drop<E:store+drop>(bv: BigVector<E>) {
         let BigVector {
             id,
             bucket_count: _,
@@ -238,5 +239,318 @@ module 0x0::big_vector {
             length: _,
         } = bv;
         object::delete(id);
+    }
+//========================================================== TESTS ============================================================//
+    #[test_only]
+    use 0x2::test_scenario;
+    #[test_only]
+    use 0x2::test_utils;
+    #[test]
+    fun test_empty() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            assert!(bv.bucket_size == 3, 1);
+            assert!(bv.bucket_count == 0, 2);
+            assert!(bv.length == 0, 3);
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_singleton() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = singleton(1010101, element_size_in_bytes, ctx);
+            assert!(bv.bucket_size == 3, 1);
+            assert!(bv.bucket_count == 1, 2);
+            assert!(bv.length == 1, 3);
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_is_empty() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            assert!(is_empty(& bv), 1);
+            test_utils::destroy(bv);
+        };
+        test_scenario::next_tx(&mut scenario, user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = singleton(1010101, element_size_in_bytes, ctx);
+            assert!(!is_empty(& bv), 2);
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_length() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            assert!(length(& bv) == 0, 1);
+            test_utils::destroy(bv);
+        };
+        test_scenario::next_tx(&mut scenario, user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = singleton(1010101, element_size_in_bytes, ctx);
+            assert!(length(& bv) == 1, 2);
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_bucket_count() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            assert!(bucket_count(& bv) == 0, 1);
+            test_utils::destroy(bv);
+        };
+        test_scenario::next_tx(&mut scenario, user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = singleton(1010101, element_size_in_bytes, ctx);
+            assert!(bucket_count(& bv) == 1, 2);
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_push_back() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            assert!(bv.bucket_size == 3, 1);
+            assert!(bv.bucket_count == 0, 2);
+            assert!(bv.length == 0, 3);
+
+            let i = 0;
+            while (i < 100) {
+                push_back(&mut bv, i);
+                assert!(bv.bucket_count == (i / bv.bucket_size) + 1, 1);
+                assert!(bv.length == i + 1, 2);
+                i = i + 1;
+            };
+            i = 0;
+            while (i < 100) {
+                assert!(*borrow(& bv, i) == i, 3);
+                assert!(*borrow_mut(&mut bv, i) == i, 4);
+                i = i + 1;
+            };
+
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_pop_back() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            assert!(bv.bucket_size == 3, 1);
+            assert!(bv.bucket_count == 0, 2);
+            assert!(bv.length == 0, 3);
+
+            let i = 0;
+            while (i < 100) {
+                push_back(&mut bv, i);
+                assert!(bv.bucket_count == (i / bv.bucket_size) + 1, 1);
+                assert!(bv.length == i + 1, 2);
+                i = i + 1;
+            };
+            while (i > 0) {
+                assert!(pop_back(&mut bv) == i - 1, 3);
+                i = i - 1;
+            };
+
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_swap() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            let i = 0;
+            while (i < 100) {
+                push_back(&mut bv, i);
+                i = i + 1;
+            };
+            
+            swap(&mut bv, 5, 10);
+            assert!(*borrow(& bv, 5) == 10, 1);
+            assert!(*borrow(& bv, 10) == 5, 2);
+            
+            swap(&mut bv, 22, 22);
+            assert!(*borrow(& bv, 22) == 22, 3);
+
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_append() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            assert!(bv.bucket_size == 3, 1);
+            assert!(bv.bucket_count == 0, 2);
+            assert!(bv.length == 0, 3);
+
+            let i = 0;
+            while (i < 100) {
+                push_back(&mut bv, i);
+                assert!(bv.bucket_count == (i / bv.bucket_size) + 1, 1);
+                assert!(bv.length == i + 1, 2);
+                i = i + 1;
+            };
+            append(&mut bv, vector[100, 101, 102]);
+            append(&mut bv, vector[103, 104]);
+            assert!(bv.bucket_size == 3, 1);
+            assert!(bv.bucket_count == 104 / 3 + 1, 2);
+            assert!(bv.length == 105, 3);
+            i = 105;
+            while (i > 0) {
+                assert!(pop_back(&mut bv) == i - 1, 3);
+                i = i - 1;
+            };
+
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_swap_remove() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            let i = 0;
+            while (i < 100) {
+                push_back(&mut bv, i);
+                i = i + 1;
+            };
+            
+            assert!(swap_remove(&mut bv, 10) == 10, 1);
+            assert!(*borrow(& bv, 10) == 99, 2);
+            assert!(swap_remove(&mut bv, 10) == 99, 3);
+            assert!(*borrow(& bv, 10) == 98, 4);
+            assert!(swap_remove(&mut bv, 97) == 97, 5);
+            *borrow_mut(&mut bv, 10) = 10;
+            i = 96;
+            while (i > 0) {
+                assert!(pop_back(&mut bv) == i, 6);
+                i = i - 1;
+            };
+            assert!(pop_back(&mut bv) == 0, 7);
+
+            test_utils::destroy(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_destroy_empty() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            assert!(bv.bucket_size == 3, 1);
+            assert!(bv.bucket_count == 0, 2);
+            assert!(bv.length == 0, 3);
+
+            let i = 0;
+            while (i < 100) {
+                push_back(&mut bv, i);
+                assert!(bv.bucket_count == (i / bv.bucket_size) + 1, 1);
+                assert!(bv.length == i + 1, 2);
+                i = i + 1;
+            };
+            while (i > 0) {
+                assert!(pop_back(&mut bv) == i - 1, 3);
+                i = i - 1;
+            };
+
+            destroy_empty(bv);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_drop() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let element_size_in_bytes = 64_000;
+            
+            let bv = empty<u64>(element_size_in_bytes, ctx);
+            assert!(bv.bucket_size == 3, 1);
+            assert!(bv.bucket_count == 0, 2);
+            assert!(bv.length == 0, 3);
+
+            let i = 0;
+            while (i < 100) {
+                push_back(&mut bv, i);
+                assert!(bv.bucket_count == (i / bv.bucket_size) + 1, 1);
+                assert!(bv.length == i + 1, 2);
+                i = i + 1;
+            };
+
+            drop(bv);
+        };
+        test_scenario::end(scenario);
     }
 }
