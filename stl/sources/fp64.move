@@ -11,7 +11,8 @@ module 0x0::fp64 {
     const Q64: u8 = 64; // Number of integer or fractional bits in an FP64
     const Q32_TO_64: u8 = 32; // Number of bits to shift a FP32 to get a FP64
     const LAST_MASK: u128 = 0xFFFFFFFFFFFFFFFF; // Mask to get the last 64 bits of an integer
-    const HALF: u128 = 1 << 63;
+    const LAST_MASK_256: u256 = 0xFFFFFFFFFFFFFFFF; // Above constant as a u256
+    const HALF: u128 = 1 << 63; // 1/2 in a FP64
 //========================================================= OBJECTS ===========================================================//
     /// `FP64` is a 64.64 fixed point number stored in a u128
     struct FP64 has copy, drop, store { 
@@ -70,12 +71,24 @@ module 0x0::fp64 {
         if (x.bits > y.bits) FP64 { bits: x.bits - y.bits } else FP64 { bits: y.bits - x.bits }
     }
     /// Returns `x * y` where `x` is a `u64` interpreted as an integer
-    public fun prod(x: u64, y: FP64): u64 {
+    public fun mul_u64(x: u64, y: FP64): u64 {
         (((x as u256) * (y.bits as u256)) >> Q64 as u64)
     }
+    /// Returns `x * y` rounded up if the fractional part is nonzero, where `y` is a `u64` interpreted as an integer
+    public fun mul_up(x: u64, y: FP64): u64 {
+        let res = (x as u256) * (y.bits as u256);
+        ((res >> Q64) as u64) + (if (res & LAST_MASK_256 == 0) 0 else 1)
+    }
     /// Returns `x / y` where `x` is a `u64` interpreted as an integer
-    public fun quot(x: u64, y: FP64): u64 {
+    public fun div_u64(x: u64, y: FP64): u64 {
         ((((x as u128) << Q64) / y.bits) as u64)
+    }
+    /// Returns `x / y` rounded up if the fractional part is nonzero, where `y` is a `u64` interpreted as an integer
+    public fun div_up(x: u64, y: FP64): u64 {
+        let x = (x as u256) << Q64;
+        let y = (y.bits as u256);
+        let res = x / y;
+        (res as u64) + (if (x % y == 0) 0 else 1)
     }
     /// Returns `sqrt(x)`
     public fun sqrt(x: FP64): FP64 {
@@ -205,38 +218,31 @@ module 0x0::fp64 {
         assert!(bits(div(int(1), int(2))) == 1 << (Q64 - 1), 43);
     }
     #[test]
-    fun test_prod() {
-        assert!(prod(1, int(1)) == 1, 44);
-        assert!(prod(2, int(1)) == 2, 45);
-        assert!(prod(2, int(2)) == 4, 46);
-        assert!(prod(1, frac(1, 2)) == 0, 47);
-        assert!(prod(2, frac(1, 2)) == 1, 48);
-        assert!(prod(2, frac(1, 4)) == 0, 49);
-        assert!(prod(16, frac(1, 8)) == 2, 50);
+    fun test_mul_u64() {
+        assert!(mul_u64(1, int(1)) == 1, 44);
+        assert!(mul_u64(2, int(1)) == 2, 45);
+        assert!(mul_u64(2, int(2)) == 4, 46);
+        assert!(mul_u64(1, frac(1, 2)) == 0, 47);
+        assert!(mul_u64(2, frac(1, 2)) == 1, 48);
+        assert!(mul_u64(2, frac(1, 4)) == 0, 49);
+        assert!(mul_u64(16, frac(1, 8)) == 2, 50);
     }
     #[test]
-    fun test_quot() {
-        assert!(quot(1, int(1)) == 1, 51);
-        assert!(quot(2, int(1)) == 2, 52);
-        assert!(quot(2, int(2)) == 1, 53);
-        assert!(quot(1, frac(1, 2)) == 2, 54);
-        assert!(quot(2, frac(1, 2)) == 4, 55);
-        assert!(quot(2, frac(1, 4)) == 8, 56);
-        assert!(quot(16, frac(1, 8)) == 128, 57);
-        assert!(quot(5, frac(5, 2)) == 2, 57);
+    fun test_div_u64() {
+        assert!(div_u64(1, int(1)) == 1, 51);
+        assert!(div_u64(2, int(1)) == 2, 52);
+        assert!(div_u64(2, int(2)) == 1, 53);
+        assert!(div_u64(1, frac(1, 2)) == 2, 54);
+        assert!(div_u64(2, frac(1, 2)) == 4, 55);
+        assert!(div_u64(2, frac(1, 4)) == 8, 56);
+        assert!(div_u64(16, frac(1, 8)) == 128, 57);
+        assert!(div_u64(5, frac(5, 2)) == 2, 57);
     }
     #[test]
     fun test_sqrt() {
         assert!(bits(sqrt(int(1))) == 1 << Q64, 58);
         assert!(sqrt(int(9)) == int(3), 59);
         assert!(sqrt(frac(1, 16)) == frac(1, 4), 60);
-    }
-    #[test]
-    fun test_floor() {
-        assert!(floor(int(1)) == 1, 65);
-        assert!(floor(frac(1, 2)) == 0, 66);
-        assert!(floor(frac(25, 4)) == 6, 67);
-        assert!(floor(frac(40, 8)) == 5, 68);
     }
     #[test]
     fun test_ceil() {
@@ -246,11 +252,39 @@ module 0x0::fp64 {
         assert!(ceil(frac(40, 8)) == 5, 64);
     }
     #[test]
+    fun test_floor() {
+        assert!(floor(int(1)) == 1, 65);
+        assert!(floor(frac(1, 2)) == 0, 66);
+        assert!(floor(frac(25, 4)) == 6, 67);
+        assert!(floor(frac(40, 8)) == 5, 68);
+    }
+    #[test]
     fun test_round() {
         assert!(round(int(1)) == 1, 69);
         assert!(round(frac(1, 2)) == 1, 70);
         assert!(round(frac(25, 4)) == 6, 71);
         assert!(round(frac(40, 8)) == 5, 72);
         assert!(round(frac(45, 8)) == 6, 73);
+    }
+    #[test]
+    fun test_mul_up() {
+        assert!(mul_up(1, int(1)) == 1, 74);
+        assert!(mul_up(2, int(1)) == 2, 75);
+        assert!(mul_up(2, int(2)) == 4, 76);
+        assert!(mul_up(1, frac(1, 2)) == 1, 77);
+        assert!(mul_up(2, frac(1, 2)) == 1, 78);
+        assert!(mul_up(2, frac(1, 4)) == 1, 79);
+        assert!(mul_up(17, frac(1, 8)) == 3, 80);
+    }
+    #[test]
+    fun test_div_up() {
+        assert!(div_up(1, int(1)) == 1, 81);
+        assert!(div_up(2, int(1)) == 2, 82);
+        assert!(div_up(2, int(2)) == 1, 83);
+        assert!(div_up(1, frac(1, 2)) == 2, 84);
+        assert!(div_up(2, frac(1, 2)) == 4, 85);
+        assert!(div_up(2, frac(6, 4)) == 2, 86);
+        assert!(div_up(16, frac(1, 8)) == 128, 87);
+        assert!(div_up(5, frac(5, 2)) == 2, 88);
     }
 }
