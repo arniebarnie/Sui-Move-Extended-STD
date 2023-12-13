@@ -87,8 +87,7 @@ module 0x0::fp64 {
     public fun div_up(x: u64, y: FP64): u64 {
         let x = (x as u256) << Q64;
         let y = (y.bits as u256);
-        let res = x / y;
-        (res as u64) + (if (x % y == 0) 0 else 1)
+        (x / y as u64) + (if (x % y == 0) 0 else 1)
     }
     /// Returns `sqrt(x)`
     public fun sqrt(x: FP64): FP64 {
