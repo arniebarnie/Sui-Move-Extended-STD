@@ -401,7 +401,7 @@
 ///
 /// ---
 ///
-module 0x0::cb {
+module 0x0::critbit {
     use std::vector::{
         borrow as v_b,
         borrow_mut as v_b_m,
