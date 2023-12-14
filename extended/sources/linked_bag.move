@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 /// A `LinkedBag` is similar to a `sui::bag::Bag` but the entries are linked together, allowing for ordered insertion and removal.
+/// Note that all keys are of the same type.
 module 0x0::linked_bag {
 //======================================================== IMPORTS ============================================================//
     use 0x1::option::{Self, Option};
@@ -85,11 +86,13 @@ module 0x0::linked_bag {
     }
     /// Returns immutable reference to the value associated with `k` in `bag`. 
     /// Aborts with `sui::dynamic_field::EFieldDoesNotExist` if `bag` does not have an entry with a key of `k`.
+    /// Aborts with `sui::dynamic_field::EFieldTypeMismatch` if `bag` has an entry associated with `k`, but the value is not of type `V`.
     public fun borrow<K:store+copy+drop,V:store>(bag: & LinkedBag<K>, k: K): & V {
         & (dynamic_field::borrow<K,Entry<K,V>>(& bag.id, k)).value
     }
     /// Returns mutable reference to the value associated with `k` in `bag`. 
     /// Aborts with `sui::dynamic_field::EFieldDoesNotExist` if `bag` does not have an entry with a key of `k`.
+    /// Aborts with `sui::dynamic_field::EFieldTypeMismatch` if `bag` has an entry associated with `k`, but the value is not of type `V`.
     public fun borrow_mut<K:store+copy+drop,V:store>(bag: &mut LinkedBag<K>, k: K): &mut V {
         &mut (dynamic_field::borrow_mut<K,Entry<K,V>>(&mut bag.id, k)).value
     }
@@ -107,6 +110,7 @@ module 0x0::linked_bag {
     }
     /// Removes the entry associated with `k` in `bag` and returns the value. This splices the key-value pair out of the ordering.
     /// Aborts with `sui::dynamic_field::EFieldDoesNotExist` if `bag` does not have an entry with a key of `k`.
+    /// Aborts with `sui::dynamic_field::EFieldTypeMismatch` if `bag` has an entry associated with `k`, but the value is not of type `V`.
     public fun remove<K:store+copy+drop,V:store>(bag: &mut LinkedBag<K>, k: K): V {
         let Entry {
             prev,
@@ -130,6 +134,7 @@ module 0x0::linked_bag {
     }
     /// Removes the front of the `bag` and returns the key and value.
     /// Aborts with `std::option::EOPTION_NOT_SET` if `bag` is empty.
+    /// Aborts with `sui::dynamic_field::EFieldTypeMismatch` if `bag` is nonempty, but the front value is not of type `V`.
     public fun pop_front<K:store+copy+drop,V:store>(bag: &mut LinkedBag<K>): (K, V) {
         let old_head = option::extract(&mut bag.head);
         let Entry {
@@ -148,6 +153,7 @@ module 0x0::linked_bag {
     }
     /// Removes the back of the `bag` and returns the key and value.
     /// Aborts with `std::option::EOPTION_NOT_SET` if `bag` is empty.
+    /// Aborts with `sui::dynamic_field::EFieldTypeMismatch` if `bag` is nonempty, but the back value is not of type `V`.
     public fun pop_back<K:store+copy+drop,V:store>(bag: &mut LinkedBag<K>): (K, V) {
         let old_tail = option::extract(&mut bag.tail);
         let Entry {
