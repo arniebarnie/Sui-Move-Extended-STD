@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /// A `LinkedBag` is similar to a `sui::bag::Bag` but the entries are linked together, allowing for ordered insertion and removal.
 module 0x0::linked_bag {
 //======================================================== IMPORTS ============================================================//
