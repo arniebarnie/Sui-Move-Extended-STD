@@ -17,6 +17,7 @@ rev = "testnet"
 ### Collections
 * [`0x0::big_vector`](/extended/sources/big_vector.move "BigVector")
 * [`0x0::linked_bag`](/extended/sources/linked_bag.move "LinkedBag")
+* [`0x0::typed_bag`](/extended/sources/typed_bag.move "TypedBag")
 ### Arithmetic
 * [`0x0::fp64`](/extended/sources/fp64.move "FP64")
 * [`0x0::i64`](/extended/sources/i64.move "I64")
