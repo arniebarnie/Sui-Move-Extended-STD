@@ -190,4 +190,292 @@ module 0x0::linked_bag {
         assert!(size == 0, EBagNotEmpty);
         object::delete(id);
     }
+//========================================================== TESTS ============================================================//
+    #[test_only]
+    use 0x2::test_scenario;
+    #[test_only]
+    use 0x2::test_utils;
+    #[test]
+    fun test_empty() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            assert!(bag.size == 0, 1);
+            assert!(option::is_none(& bag.head), 2);
+            assert!(option::is_none(& bag.tail), 3);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_front() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            assert!(option::is_none(front(& bag)), 1);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_back() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            assert!(option::is_none(back(& bag)), 1);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_push_front() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            assert!(option::is_none(front(& bag)), 1);
+            assert!(bag.size == 0, 2);
+            push_front(&mut bag, 10, 10);
+            assert!(*option::borrow(front(& bag)) == 10, 3);
+            assert!(*borrow(& bag, 10) == 10, 4);
+            assert!(*option::borrow(back(& bag)) == 10, 5);
+            assert!(bag.size == 1, 6);
+            push_front(&mut bag, 20, 20);
+            assert!(*option::borrow(front(& bag)) == 20, 7);
+            assert!(*borrow(& bag, 20) == 20, 8);
+            assert!(*option::borrow(back(& bag)) == 10, 9);
+            assert!(*borrow(& bag, 10) == 10, 10);
+            assert!(bag.size == 2, 11);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_push_back() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            assert!(option::is_none(front(& bag)), 1);
+            assert!(bag.size == 0, 2);
+            push_back(&mut bag, 10, 10);
+            assert!(*option::borrow(front(& bag)) == 10, 3);
+            assert!(*borrow(& bag, 10) == 10, 4);
+            assert!(*option::borrow(back(& bag)) == 10, 5);
+            assert!(bag.size == 1, 6);
+            push_back(&mut bag, 20, 20);
+            assert!(*option::borrow(front(& bag)) == 10, 7);
+            assert!(*borrow(& bag, 10) == 10, 8);
+            assert!(*option::borrow(back(& bag)) == 20, 9);
+            assert!(*borrow(& bag, 20) == 20, 10);
+            assert!(bag.size == 2, 11);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_prev() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            push_back(&mut bag, 10, 10);
+            push_back(&mut bag, 20, 20);
+            push_back(&mut bag, 30, 30);
+            push_back(&mut bag, 40, 40);
+            push_back(&mut bag, 50, 50);
+            let k = *option::borrow(back(& bag));
+            assert!(k == 50, 1);
+            k = *option::borrow(prev<u64,u64>(& bag, k));
+            assert!(k == 40, 2);
+            k = *option::borrow(prev<u64,u64>(& bag, k));
+            assert!(k == 30, 3);
+            k = *option::borrow(prev<u64,u64>(& bag, k));
+            assert!(k == 20, 4);
+            k = *option::borrow(prev<u64,u64>(& bag, k));
+            assert!(k == 10, 5);
+            let k = prev<u64,u64>(& bag, k);
+            assert!(option::is_none(k), 6);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_next() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            push_back(&mut bag, 10, 10);
+            push_back(&mut bag, 20, 20);
+            push_back(&mut bag, 30, 30);
+            push_back(&mut bag, 40, 40);
+            push_back(&mut bag, 50, 50);
+            let k = *option::borrow(front(& bag));
+            assert!(k == 10, 1);
+            k = *option::borrow(next<u64,u64>(& bag, k));
+            assert!(k == 20, 2);
+            k = *option::borrow(next<u64,u64>(& bag, k));
+            assert!(k == 30, 3);
+            k = *option::borrow(next<u64,u64>(& bag, k));
+            assert!(k == 40, 4);
+            k = *option::borrow(next<u64,u64>(& bag, k));
+            assert!(k == 50, 5);
+            let k = next<u64,u64>(& bag, k);
+            assert!(option::is_none(k), 6);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_remove() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            push_back(&mut bag, 10, 10);
+            push_back(&mut bag, 20, 20);
+            push_back(&mut bag, 30, 30);
+            push_back(&mut bag, 40, 40);
+            push_back(&mut bag, 50, 50);
+            assert!(remove(&mut bag, 10) == 10, 1);
+            assert!(remove(&mut bag, 20) == 20, 2);
+            assert!(remove(&mut bag, 30) == 30, 3);
+            assert!(remove(&mut bag, 40) == 40, 4);
+            assert!(remove(&mut bag, 50) == 50, 5);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_pop_front() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            push_back(&mut bag, 10, 10);
+            push_back(&mut bag, 20, 20);
+            push_back(&mut bag, 30, 30);
+            push_back(&mut bag, 40, 40);
+            push_back(&mut bag, 50, 50);
+            assert!(bag.size == 5, 1);
+            let (k, v) = pop_front<u64,u64>(&mut bag);
+            assert!(k == 10, 2);
+            assert!(v == 10, 3);
+            assert!(bag.size == 4, 4);
+            (k, v) = pop_front<u64,u64>(&mut bag);
+            assert!(k == 20, 5);
+            assert!(v == 20, 6);
+            assert!(bag.size == 3, 7);
+            (k, v) = pop_front<u64,u64>(&mut bag);
+            assert!(k == 30, 8);
+            assert!(v == 30, 9);
+            assert!(bag.size == 2, 10);
+            (k, v) = pop_front<u64,u64>(&mut bag);
+            assert!(k == 40, 11);
+            assert!(v == 40, 12);
+            assert!(bag.size == 1, 13);
+            (k, v) = pop_front<u64,u64>(&mut bag);
+            assert!(k == 50, 14);
+            assert!(v == 50, 15);
+            assert!(bag.size == 0, 16);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_pop_back() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            push_back(&mut bag, 10, 10);
+            push_back(&mut bag, 20, 20);
+            push_back(&mut bag, 30, 30);
+            push_back(&mut bag, 40, 40);
+            push_back(&mut bag, 50, 50);
+            assert!(bag.size == 5, 1);
+            let (k, v) = pop_back<u64,u64>(&mut bag);
+            assert!(k == 50, 2);
+            assert!(v == 50, 3);
+            assert!(bag.size == 4, 4);
+            (k, v) = pop_back<u64,u64>(&mut bag);
+            assert!(k == 40, 5);
+            assert!(v == 40, 6);
+            assert!(bag.size == 3, 7);
+            (k, v) = pop_back<u64,u64>(&mut bag);
+            assert!(k == 30, 8);
+            assert!(v == 30, 9);
+            assert!(bag.size == 2, 10);
+            (k, v) = pop_back<u64,u64>(&mut bag);
+            assert!(k == 20, 11);
+            assert!(v == 20, 12);
+            assert!(bag.size == 1, 13);
+            (k, v) = pop_back<u64,u64>(&mut bag);
+            assert!(k == 10, 14);
+            assert!(v == 10, 15);
+            assert!(bag.size == 0, 16);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_contains() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            push_back(&mut bag, 10, 10);
+            push_back(&mut bag, 20, 20);
+            push_back(&mut bag, 30, 30);
+            push_back(&mut bag, 40, 40);
+            push_back(&mut bag, 50, 50);
+            assert!(contains(& bag, 10), 1);
+            assert!(contains(& bag, 20), 2);
+            assert!(contains(& bag, 30), 3);
+            assert!(contains(& bag, 40), 4);
+            assert!(contains(& bag, 50), 5);
+            assert!(!contains(& bag, 25), 6);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
+    #[test]
+    fun test_contains_with_type() {
+        let user = @0xBABE;
+        let scenario = test_scenario::begin(user);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            let bag = empty<u64>(ctx);
+            push_back(&mut bag, 10, 10);
+            push_back(&mut bag, 20, 20);
+            push_back(&mut bag, 30, 30);
+            push_back(&mut bag, 40, 40);
+            push_back(&mut bag, 50, 50);
+            assert!(contains_with_type<u64,u64>(& bag, 10), 1);
+            assert!(contains_with_type<u64,u64>(& bag, 20), 2);
+            assert!(contains_with_type<u64,u64>(& bag, 30), 3);
+            assert!(contains_with_type<u64,u64>(& bag, 40), 4);
+            assert!(contains_with_type<u64,u64>(& bag, 50), 5);
+            assert!(!contains_with_type<u64,address>(& bag, 50), 6);
+            assert!(!contains_with_type<u64,u64>(& bag, 25), 7);
+            assert!(!contains_with_type<u64,bool>(& bag, 25), 8);
+            test_utils::destroy(bag);
+        };
+        test_scenario::end(scenario);
+    }
 }
