@@ -16,6 +16,7 @@ rev = "testnet"
 * [`0x0::box`](/extended/sources/box.move "Box")
 ### Collections
 * [`0x0::big_vector`](/extended/sources/big_vector.move "BigVector")
+* [`0x0::cb`](/extended/sources/cb.move "CB")
 * [`0x0::linked_bag`](/extended/sources/linked_bag.move "LinkedBag")
 * [`0x0::typed_bag`](/extended/sources/typed_bag.move "TypedBag")
 ### Arithmetic
