@@ -18,6 +18,7 @@ rev = "testnet"
 * [`0x0::big_vector`](/extended/sources/big_vector.move "BigVector")
 * [`0x0::critbit`](/extended/sources/critbit.move "CritBit")
 * [`0x0::linked_bag`](/extended/sources/linked_bag.move "LinkedBag")
+* [`0x0::type_bag`](/extended/sources/type_bag.move "TypeBag")
 * [`0x0::typed_bag`](/extended/sources/typed_bag.move "TypedBag")
 ### Arithmetic
 * [`0x0::fp64`](/extended/sources/fp64.move "FP64")
