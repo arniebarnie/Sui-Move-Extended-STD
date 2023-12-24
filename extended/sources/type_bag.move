@@ -12,12 +12,12 @@ module 0x0::type_bag {
     /// Dummy struct to hold type
     struct Key<phantom K> has store, copy, drop { }
     /// Holds key-values in `id`
-    struct TypeBag {
+    struct TypeBag has key, store {
         id: UID,
         size: u64 // Number of entries held
     }
 //========================================================= METHODS ===========================================================//
-    /// Returns empty `TypeBag`
+    /// Returns empty `TypeBag`.
     public fun new(ctx: &mut TxContext): TypeBag {
         TypeBag {
             id: object::new(ctx),
