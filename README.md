@@ -14,6 +14,8 @@ rev = "testnet"
 ### General
 * [`0x0::account`](/extended/sources/account.move "Account")
 * [`0x0::box`](/extended/sources/box.move "Box")
+### Coin Management
+* [`0x0::treasury`](/extended/sources/treasury.move "Treasury")
 ### Collections
 * [`0x0::big_vector`](/extended/sources/big_vector.move "BigVector")
 * [`0x0::critbit`](/extended/sources/critbit.move "CritBit")
