@@ -26,8 +26,12 @@ module 0x0::treasury {
         type_bag::add<T,TreasuryCap<T>>(&mut treasury.caps, cap);
     }
     /// Removes the mint/burn capability, i.e. `sui::coin::TreasuryCap<T>`, for `sui::coin::Coin<T>` from `treasury`.
-    public fun remove<T:drop>(treasury: &mut Treasury): TreasuryCap<T> {
+    public fun remove<T>(treasury: &mut Treasury): TreasuryCap<T> {
         type_bag::remove<T,TreasuryCap<T>>(&mut treasury.caps)
+    }
+    /// Returns true if `treasury` has `sui::coin::TreasuryCap<T>`, and false otherwise.
+    public fun contains<T>(treasury: & Treasury): bool {
+        type_bag::contains<T>(& treasury.caps)
     }
     /// Immutably borrows `sui::coin::TreasuryCap<T>` from `treasury`.
     public fun borrow<T>(treasury: & Treasury): & TreasuryCap<T> {
