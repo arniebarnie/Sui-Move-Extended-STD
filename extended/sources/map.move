@@ -17,10 +17,6 @@ module 0x0::map {
         keys: vector<K>,
         values: vector<V>,
     }
-    spec Map {
-        invariant len(keys) == len(values);
-        invariant forall i in range(keys), j in range(keys): (keys[i] == keys[j]) ==> (i == j);
-    }
 //========================================================= METHODS ===========================================================//
     /// Returns empty `Map`.
     public fun new<K,V>(): Map<K,V> {
@@ -54,56 +50,46 @@ module 0x0::map {
             values
         }
     }
-    spec from {
-        ensures forall idx in range(keys): result.keys[idx] == keys[idx] && result.values[idx] == values[idx];
-    }
     /// Returns index of `k` in the keys vector of `map`.
     /// Aborts with `EKeyDoesNotExist` if `map` does not have an entry with a key of `k`.
+    /// Aborts if `map` is empty.
     public fun idx_of<K,V>(map: & Map<K,V>, k: & K): u64 {
-        let i = 0;
-        let length = vector::length(& map.keys);
+        let length = vector::length(& map.keys) - 1;
         let keys = & map.keys;
-        while (i < length) {
-            if (vector::borrow(keys, i) == k) (return i);
-            i = i + 1;
+        loop {
+            if (vector::borrow(keys, length) == k) (return length);
+            if (length == 0) break;
+            length = length - 1;
         };
 
         abort EKeyDoesNotExist
     }
-    spec idx_of {
-        aborts_if index_of(map.keys, k) == len(map.keys);
-        ensures map.keys[result] == k;
-    }
     /// Returns index of `k` in the keys vector of `map`, and none if it is not found.
     public fun try_idx_of<K,V>(map: & Map<K,V>, k: & K): Option<u64> {
-        let i = 0;
         let length = vector::length(& map.keys);
+        if (length == 0) return option::none();
+        length = length - 1;
         let keys = & map.keys;
-        while (i < length) {
-            if (vector::borrow(keys, i) == k) (return option::some(i));
-            i = i + 1;
+        loop {
+            if (vector::borrow(keys, length) == k) (return option::some(length));
+            if (length == 0) break;
+            length = length - 1;
         };
 
         option::none()
     }
-    spec try_idx_of {
-        ensures if (index_of(map.keys, k) != len(map.keys)) result == 0x1::option::some(index_of(map.keys, k))
-                else result == 0x1::option::none();
-    }
     /// Returns true if `k` is associated with a value in `map`, and false otherwise.
     public fun contains<K,V>(map: & Map<K,V>, k: & K): bool {
-        let i = 0;
-        let length = vector::length(& map.keys);
+        let length = vector::length(& map.keys) - 1;
+        if (length == 0) (return false);
         let keys = & map.keys;
-        while (i < length) {
-            if (vector::borrow(keys, i) == k) (return true);
-            i = i + 1;
+        loop {
+            if (vector::borrow(keys, length) == k) (return true);
+            if (length == 0) break;
+            length = length - 1;
         };
 
         false
-    }
-    spec contains {
-        ensures result == (index_of(map.keys, k) != len(map.keys));
     }
     /// Adds a key-value pair of `k` and `v` to `map`.
     /// Aborts with `EKeyAlreadyExists` if `map` already has an entry with a key of `k`.
@@ -112,28 +98,16 @@ module 0x0::map {
         vector::push_back(&mut map.keys, k);
         vector::push_back(&mut map.values, v);
     }
-    spec insert {
-        ensures (index_of(map.keys, k) != len(map.keys)) && (index_of(map.keys, k) == index_of(map.values, v));
-        ensures len(map.keys) == len(old(map.keys)) + 1;
-    }
     /// Removes the entry associated with `k` in `map` and returns the value.
     /// Aborts with `EKeyDoesNotExist` if `map` does not have an entry with a key of `k`.
     public fun remove<K,V>(map: &mut Map<K,V>, k: & K): (K, V) {
         let idx = idx_of(map, k);
         (vector::swap_remove(&mut map.keys, idx), vector::swap_remove(&mut map.values, idx))
     }
-    spec remove {
-        let old_map = old(map);
-        ensures (index_of(old_map.keys, k) != len(old_map.keys)) && (index_of(old_map.keys, k) == index_of(old_map.values, v));
-        ensures len(map.keys) + 1 == len(old_map.keys);
-    }
     /// Removes the last entry in `map`.
     /// Aborts if `map` is empty.
     public fun pop<K,V>(map: &mut Map<K,V>): (K, V) {
         (vector::pop_back(&mut map.keys), vector::pop_back(&mut map.values))
-    }
-    spec pop {
-        aborts_if len(map.keys) == 0;
     }
     /// Returns immutable reference to the value associated with `k` in `map`.
     /// Aborts with `EKeyDoesNotExist` if `map` does not have an entry with a key of `k`.
@@ -141,22 +115,10 @@ module 0x0::map {
         let idx = idx_of(map, k);
         vector::borrow(& map.values, idx)
     }
-    spec borrow {
-        ensures len(map.keys) == len(old(map).keys);
-        ensures len(map.values) == len(old(map).values);
-        aborts_if index_of(map.keys, k) == len(map.keys) with EKeyDoesNotExist;
-        invariant result == map.values[index_of(map.keys, k)];
-    }
     /// Returns immutable reference to the `idx`th element of the values vector in `map`.
     /// Aborts with `std::vector::EINDEX_OUT_OF_BOUNDS` if `idx` is outside the bounds of the values vector.
     public fun borrow_idx<K,V>(map: & Map<K,V>, idx: u64): & V {
         vector::borrow(& map.values, idx)
-    }
-    spec borrow_idx {
-        ensures len(map.keys) == len(old(map).keys);
-        ensures len(map.values) == len(old(map).values);
-        aborts_if idx >= len(map.values);
-        invariant result == map.values[idx];
     }
     /// Returns mutable reference to the value associated with `k` in `map`. 
     /// Aborts with `EKeyDoesNotExist` if `map` does not have an entry with a key of `k`.
@@ -164,22 +126,10 @@ module 0x0::map {
         let idx = idx_of(map, k);
         vector::borrow_mut(&mut map.values, idx)
     }
-    spec borrow_mut {
-        ensures len(map.keys) == len(old(map).keys);
-        ensures len(map.values) == len(old(map).values);
-        aborts_if index_of(map.keys, k) == len(map.keys) with EKeyDoesNotExist;
-        invariant result == map.values[index_of(map.keys, k)];
-    }
     /// Returns mutable reference to the `idx`th element of the values vector in `map`.
     /// Aborts with `std::vector::EINDEX_OUT_OF_BOUNDS` if `idx` is outside the bounds of the values vector.
     public fun borrow_mut_idx<K,V>(map: &mut Map<K,V>, idx: u64): &mut V {
         vector::borrow_mut(&mut map.values, idx)
-    }
-    spec borrow_mut_idx {
-        ensures len(map.keys) == len(old(map).keys);
-        ensures len(map.values) == len(old(map).values);
-        aborts_if idx >= len(map.values);
-        invariant result == map.values[idx];
     }
     /// Returns copy of the value associated with `k` in `map`, and none if `k` is not a key in `map`.
     public fun get<K,V:copy>(map: & Map<K,V>, k: & K): Option<V> {
@@ -193,22 +143,10 @@ module 0x0::map {
 
         option::none()
     }
-    spec get {
-        ensures len(map.keys) == len(old(map).keys);
-        ensures len(map.values) == len(old(map).values);
-        ensures if (index_of(map.keys, k) == len(map.keys)) result == 0x1::option::none()
-                else result == 0x1::option::some(map.values[index_of(map.keys, k)]);
-    }
     /// Returns copy of the `idx`th element of the values vector in `map`, and none if `idx` is out of bounds. 
     public fun get_idx<K,V:copy>(map: & Map<K,V>, idx: u64): Option<V> {
         if (idx < vector::length(& map.values)) option::some(*vector::borrow(& map.values, idx))
         else option::none()
-    }
-    spec get_idx {
-        ensures len(map.keys) == len(old(map).keys);
-        ensures len(map.values) == len(old(map).values);
-        ensures if (idx >= len(map.keys)) result == option::none()
-                else result == option::some(map.values[idx]);
     }
     /// Returns number of key-value pairs in `map`.
     public fun size<K,V>(map: & Map<K,V>): u64 {
@@ -247,5 +185,76 @@ module 0x0::map {
             values
         } = map;
         (keys, values)
+    }
+}
+
+spec 0x0::map {
+    spec Map {
+        invariant len(keys) == len(values);
+        invariant forall i in range(keys), j in range(keys): (keys[i] == keys[j]) ==> (i == j);
+    }
+
+    spec from {
+        ensures forall idx in range(keys): result.keys[idx] == keys[idx] && result.values[idx] == values[idx];
+    }
+
+    spec idx_of {
+        aborts_if index_of(map.keys, k) == len(map.keys);
+        ensures map.keys[result] == k;
+    }
+
+    spec try_idx_of {
+        ensures if (index_of(map.keys, k) == len(map.keys)) result == 0x1::option::spec_none()
+                else result == 0x1::option::spec_some(index_of(map.keys, k));
+    }
+
+    spec contains {
+        ensures result == (index_of(map.keys, k) != len(map.keys));
+    }
+
+    spec insert {
+        aborts_if index_of(map.keys, k) != len(map.keys) with EKeyAlreadyExists;
+        ensures (index_of(map.keys, k) != len(map.keys)) && (index_of(map.keys, k) == index_of(map.values, v));
+        ensures len(map.keys) == len(old(map.keys)) + 1;
+    }
+
+    spec remove {
+        aborts_if index_of(map.keys, k) == len(map.keys) with EKeyDoesNotExist;
+        ensures (index_of(map.keys, k) == len(map.keys));
+        ensures len(map.keys) + 1 == len(old(map).keys);
+    }
+
+    spec pop {
+        aborts_if len(map.keys) == 0;
+    }
+
+    spec borrow {
+        aborts_if index_of(map.keys, k) == len(map.keys) with EKeyDoesNotExist;
+        ensures result == map.values[index_of(map.keys, k)];
+    }
+
+    spec borrow_idx {
+        aborts_if idx >= len(map.values);
+        ensures result == map.values[idx];
+    }
+
+    spec borrow_mut {
+        aborts_if index_of(map.keys, k) == len(map.keys) with EKeyDoesNotExist;
+        ensures result == map.values[index_of(map.keys, k)];
+    }
+
+    spec borrow_mut_idx {
+        aborts_if idx >= len(map.values);
+        ensures result == map.values[idx];
+    }
+
+    spec get {
+        ensures if (index_of(map.keys, k) == len(map.keys)) result == 0x1::option::spec_none()
+                else result == 0x1::option::spec_some(map.values[index_of(map.keys, k)]);
+    }
+
+    spec get_idx {
+        ensures if (idx >= len(map.keys)) result == 0x1::option::spec_none()
+                else result == 0x1::option::spec_some(map.values[idx]);
     }
 }
