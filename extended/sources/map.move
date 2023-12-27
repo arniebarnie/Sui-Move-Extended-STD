@@ -195,6 +195,8 @@ spec 0x0::map {
     }
 
     spec from {
+        aborts_if len(keys) == len(values) with EVectorLengthNotEqual;
+        aborts_if exists i in range(keys), j in range(keys) where i != j: keys[i] == keys[j] with EKeysNotUnique;
         ensures forall idx in range(keys): result.keys[idx] == keys[idx] && result.values[idx] == values[idx];
     }
 
