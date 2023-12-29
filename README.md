@@ -19,6 +19,7 @@ rev = "testnet"
 ### Collections
 * [`0x0::big_vector`](/extended/sources/big_vector.move "BigVector")
 * [`0x0::critbit`](/extended/sources/critbit.move "CritBit")
+* [`0x0::dyn_set`](/extended/sources/dyn_set.move "DynSet")
 * [`0x0::linked_bag`](/extended/sources/linked_bag.move "LinkedBag")
 * [`0x0::map`](/extended/sources/map.move "Map")
 * [`0x0::type_bag`](/extended/sources/type_bag.move "TypeBag")
