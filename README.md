@@ -27,18 +27,12 @@ rev = "testnet"
   will not be equal, with `==`, at runtime.
 * [`0x0::critbit`](/extended/sources/critbit.move "CritBit")
   Copied from [Econia Labs](https://github.com/econia-labs/econia/blob/main/src/move/econia/sources/CritBit.move "CritBit").
-  A critical bit (crit-bit) tree is a compact binary prefix tree,
-  similar to a binary search tree, that stores a prefix-free set of
-  bitstrings, like n-bit integers or variable-length 0-terminated byte
-strings. For a given set of keys there exists a unique crit-bit tree
-representing the set, hence crit-bit trees do not require complex
-rebalancing algorithms like those of AVL or red-black binary search
-trees. Crit-bit trees support the following operations, quickly:
+  A critical bit (crit-bit) tree is a compact binary prefix tree that supports quick:
     * Membership testing
     * Insertion
     * Deletion
     * Predecessor
-    * Successor <br>
+    * Successor
     * Iteration
 * [`0x0::dyn_set`](/extended/sources/dyn_set.move "DynSet")
   A `DynSet` is a set-like collection that holds keys using Sui's dynamic fields. Note that this also means that 
