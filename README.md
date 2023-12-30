@@ -13,9 +13,9 @@ rev = "testnet"
 ## Modules
 ### General
 * [`0x0::account`](/extended/sources/account.move "Account")
-  Permissionless system to create and manage capability for an address
+  Permissionless system to create and manage capability for an address.
 * [`0x0::box`](/extended/sources/box.move "Box")
-  A `Box` is used to place objects without the key ability in global storage
+  A `Box` is used to place objects without the key ability in global storage.
 ### Coin Management
 * [`0x0::treasury`](/extended/sources/treasury.move "Treasury")
   A `Treasury` allows for multi-coin management by dynamically storing multiple `sui::coin::TreasuryCap<T>`s.
@@ -55,7 +55,7 @@ rev = "testnet"
 * [`0x0::i64`](/extended/sources/i64.move "I64")
   An `I64` is a signed 64-bit integer.
 * [`0x0::u64`](/extended/sources/u64.move "u64")
-  Mathematical functions for `u64`s
+  Mathematical functions for `u64`s.
 * [`0x0::u128`](/extended/sources/u128.move "u128")
   Mathematical functions for `u128`s.
 * [`0x0::u256`](/extended/sources/u256.move "u256")
