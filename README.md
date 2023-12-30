@@ -51,7 +51,7 @@ rev = "testnet"
   A `TypedBag` is similar to a `sui::bag::Bag` but except that all keys are of the same type.
 ### Arithmetic
 * [`0x0::fp64`](/extended/sources/fp64.move "FP64")
-  A `FP64` is a 64.64 bit fixed point number stored in a `u128`.
+  An `FP64` is a 64.64 bit fixed point number stored in a `u128`.
 * [`0x0::i64`](/extended/sources/i64.move "I64")
   An `I64` is a signed 64-bit integer.
 * [`0x0::u64`](/extended/sources/u64.move "u64")
