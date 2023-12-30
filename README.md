@@ -40,6 +40,8 @@ rev = "testnet"
 * [`0x0::linked_bag`](/extended/sources/linked_bag.move "LinkedBag")
   A `LinkedBag` is similar to a `sui::bag::Bag` but the entries are linked together, allowing for ordered insertion and removal.
   Note that all keys are of the same type.
+* [`0x0::linked_table_helper`](/extended/sources/linked_table_helper.move "LinkedTable")
+  Additional utility methods for `sui::linked_table`.
 * [`0x0::map`](/extended/sources/map.move "Map")
   This module is a different implementation of a vector-based map from `sui::vec_map` that allows for easier iteration and
   copying of keys and values.
