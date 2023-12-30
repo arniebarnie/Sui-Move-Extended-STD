@@ -4,7 +4,7 @@
 /// `DynSet` values containing the exact same keys will not be equal, with `==`, at runtime.
 module 0x0::dyn_set {
 //======================================================== IMPORTS ============================================================//
-    use 0x2::object::{Self, UID};
+    use sui::object::{Self, UID};
     use 0x2::dynamic_field::{Self};
     use 0x2::tx_context::{TxContext};
 //======================================================= ERROR CODES =========================================================//

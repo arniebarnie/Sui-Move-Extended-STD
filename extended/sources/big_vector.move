@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 /// A `BigVector` is a vector-like collection that stores multiple vectors using Sui's dynamic fields. This allows a `BigVector`'s capacity 
-/// to be theoretically unlimited. However, the quantity of operations on `BigVector's in a single transaction is bounded by its dynamic field 
+/// to be theoretically unlimited. However, the quantity of operations on `BigVector`'s in a single transaction is bounded by its dynamic field 
 /// accesses as these are capped per transaction. Note that this also means that `BigVector` values with the exact same index-value mapping 
 /// will not be equal, with `==`, at runtime.
 module 0x0::big_vector {
