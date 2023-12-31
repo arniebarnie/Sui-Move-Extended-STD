@@ -66,7 +66,7 @@ module 0x0::linked_table_helper {
         if (linked_table::contains(table, k)) option::some(*linked_table::borrow(table, k))
         else option::none()
     }
-    /// Returns an copy of the value in `table` associated with each key in `keys`.
+    /// Returns a copy of the value in `table` associated with each key in `keys`.
     public fun get_all<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, keys: vector<K>): vector<V> {
         let keys_ref = & keys;
         let len = vector::length(keys_ref);
