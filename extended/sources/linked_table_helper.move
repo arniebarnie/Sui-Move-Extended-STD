@@ -4,7 +4,7 @@
 module 0x0::linked_table_helper {
 //======================================================== IMPORTS ============================================================//
     use 0x1::vector::{Self};
-    use 0x1::option::{Self};
+    use 0x1::option::{Self, Option};
     use 0x2::linked_table::{Self, LinkedTable};
 //========================================================= METHODS ===========================================================//
     /// Returns the keys of `map` as a `vector`.
@@ -60,5 +60,41 @@ module 0x0::linked_table_helper {
 
         linked_table::destroy_empty(table);
         (keys, values)
+    }
+    /// Returns an `std::Option<V>` of the value in `table` associated with `k`, and none otherwise.
+    public fun try_get<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, k: K): Option<V> {
+        if (linked_table::contains(table, k)) option::some(*linked_table::borrow(table, k))
+        else option::none()
+    }
+    /// Returns an copy of the value in `table` associated with each key in `keys`.
+    public fun get_all<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, keys: vector<K>): vector<V> {
+        let keys_ref = & keys;
+        let len = vector::length(keys_ref);
+        let i = 0;
+        let values = vector[];
+        let values_mut = &mut values;
+        while (i < len) {
+            let k = *vector::borrow(keys_ref, i);
+            vector::push_back(values_mut, *linked_table::borrow(table, k));
+            i = i + 1;
+        };
+
+        values
+    }
+    /// Returns an `std::Option<V>` of the value in `table` associated with each key in `keys` and none if it is not found.
+    public fun try_get_all<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, keys: vector<K>): vector<Option<V>> {
+        let keys_ref = & keys;
+        let len = vector::length(keys_ref);
+        let i = 0;
+        let values = vector[];
+        let values_mut = &mut values;
+        while (i < len) {
+            let k = *vector::borrow(keys_ref, i);
+            vector::push_back(values_mut, if (linked_table::contains(table, k)) option::some(*linked_table::borrow(table, k))
+                                             else option::none());
+            i = i + 1;
+        };
+
+        values
     }
 }
