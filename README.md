@@ -45,6 +45,8 @@ rev = "testnet"
 * [`0x0::map`](/extended/sources/map.move "Map")
   This module is a different implementation of a vector-based map from `sui::vec_map` that allows for easier iteration and
   copying of keys and values.
+* [`0x0::table_helper`](/extended/sources/table_helper.move "Table")
+  Additional utility methods for `sui::table`.
 * [`0x0::type_bag`](/extended/sources/type_bag.move "TypeBag")
   A `TypeBag` is a `sui::bag::Bag` but where values are keyed by types.
 * [`0x0::typed_bag`](/extended/sources/typed_bag.move "TypedBag")
