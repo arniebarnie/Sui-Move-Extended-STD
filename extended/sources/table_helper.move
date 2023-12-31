@@ -19,8 +19,7 @@ module 0x0::table_helper {
         let values = vector[];
         let values_mut = &mut values;
         while (i < len) {
-            let k = *vector::borrow(keys, i);
-            vector::push_back(values_mut, *table::borrow(table, k));
+            vector::push_back(values_mut, *table::borrow(table, *vector::borrow(keys, i)));
             i = i + 1;
         };
 
@@ -54,6 +53,30 @@ module 0x0::table_helper {
         while (i < len) {
             let k = *vector::borrow(keys, i);
             vector::push_back(values_mut, if (table::contains(table, k)) *table::borrow(table, k) else *default);
+            i = i + 1;
+        };
+
+        values
+    }
+    /// Inserts pairs of elements of the same index in `keys` and `values` as key-value pairs into `table`.
+    public fun add_all<K:store+copy+drop,V:store>(table: &mut Table<K,V>, keys: vector<K>, values: vector<V>) {
+        let (keys_mut, values_mut) = (&mut keys, &mut values);
+        let len = vector::length(keys_mut);
+        while (len > 0) {
+            table::add(table, vector::pop_back(keys_mut), vector::pop_back(values_mut));
+            len = len - 1;
+        };
+        vector::destroy_empty(keys);
+        vector::destroy_empty(values);
+    }
+    // Removes the entry associated with each key in `keys` from `table` and returns the values.
+    public fun remove_all<K:store+copy+drop,V:store>(table: &mut Table<K,V>, keys: & vector<K>): vector<V> {
+        let len = vector::length(keys);
+        let i = 0;
+        let values = vector[];
+        let values_mut = &mut values;
+        while (i < len) {
+            vector::push_back(values_mut, table::remove(table, *vector::borrow(keys, i)));
             i = i + 1;
         };
 
