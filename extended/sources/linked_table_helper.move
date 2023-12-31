@@ -67,14 +67,13 @@ module 0x0::linked_table_helper {
         else option::none()
     }
     /// Returns a copy of the value in `table` associated with each key in `keys`.
-    public fun get_all<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, keys: vector<K>): vector<V> {
-        let keys_ref = & keys;
-        let len = vector::length(keys_ref);
+    public fun get_all<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, keys: & vector<K>): vector<V> {
+        let len = vector::length(keys);
         let i = 0;
         let values = vector[];
         let values_mut = &mut values;
         while (i < len) {
-            let k = *vector::borrow(keys_ref, i);
+            let k = *vector::borrow(keys, i);
             vector::push_back(values_mut, *linked_table::borrow(table, k));
             i = i + 1;
         };
@@ -82,16 +81,34 @@ module 0x0::linked_table_helper {
         values
     }
     /// Returns an `std::Option<V>` of the value in `table` associated with each key in `keys` and none if it is not found.
-    public fun try_get_all<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, keys: vector<K>): vector<Option<V>> {
-        let keys_ref = & keys;
-        let len = vector::length(keys_ref);
+    public fun try_get_all<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, keys: & vector<K>): vector<Option<V>> {
+        let len = vector::length(keys);
         let i = 0;
         let values = vector[];
         let values_mut = &mut values;
         while (i < len) {
-            let k = *vector::borrow(keys_ref, i);
+            let k = *vector::borrow(keys, i);
             vector::push_back(values_mut, if (linked_table::contains(table, k)) option::some(*linked_table::borrow(table, k))
                                              else option::none());
+            i = i + 1;
+        };
+
+        values
+    }
+    /// Returns a copy of the value in `table` associated with `k` or a copy of `default` if it is not found.
+    public fun get_with_default<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, k: K, default: & V): V {
+        if (linked_table::contains(table, k)) *linked_table::borrow(table, k)
+        else *default
+    }
+    /// Returns a copy of the value in `table` associated with each key in `keys` or a copy of `default` if it is not found.
+    public fun get_all_with_default<K:store+copy+drop,V:store+copy>(table: & LinkedTable<K,V>, keys: & vector<K>, default: & V): vector<V> {
+        let len = vector::length(keys);
+        let i = 0;
+        let values = vector[];
+        let values_mut = &mut values;
+        while (i < len) {
+            let k = *vector::borrow(keys, i);
+            vector::push_back(values_mut, if (linked_table::contains(table, k)) *linked_table::borrow(table, k) else *default);
             i = i + 1;
         };
 
