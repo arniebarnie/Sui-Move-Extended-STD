@@ -51,6 +51,8 @@ rev = "testnet"
   A `TypeBag` is a `sui::bag::Bag` but where values are keyed by types.
 * [`0x0::typed_bag`](/extended/sources/typed_bag.move "TypedBag")
   A `TypedBag` is similar to a `sui::bag::Bag` but except that all keys are of the same type.
+* [`0x0::vector_helper`](/extended/sources/vector_helper.move "vector")
+  Additional utility methods for `vector`s.
 ### Arithmetic
 * [`0x0::fp64`](/extended/sources/fp64.move "FP64")
   An `FP64` is a 64.64 bit fixed point number stored in a `u128`.
